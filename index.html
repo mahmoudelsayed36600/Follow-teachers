@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام متابعة المعلمين الشامل - النسخة المتكاملة V4.5 (Firebase)</title>
+    <title>نظام متابعة المعلمين الشامل - النسخة المتكاملة V4.6 (Fix)</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -870,7 +870,7 @@
     
     const defaultData = {
         users: [
-            {id: 1, name: 'مدير النظام', username: 'admin', password: '123', role: 'admin', mobile: '966500000000', schoolId: null, scope: {}}
+            {id: 1, name: 'مدير النظام', username: 'Mahmod', password: 'Ma@521990', role: 'admin', mobile: '966509635561', schoolId: null, scope: {}}
         ],
         schools: [], 
         subjects: [],
@@ -898,13 +898,19 @@
                 const val = snapshot.val();
                 if (val) {
                     this.data = val;
+                    // FIX: Ensure all arrays are initialized if Firebase returned null/undefined for them
+                    // هذا الجزء هو الحل للمشكلة: التأكد من أن القوائم موجودة حتى لو كانت فارغة
+                    const keys = ['schools', 'subjects', 'weeks', 'criteria', 'users', 'assignments', 'evaluations', 'procedures', 'notifications'];
+                    keys.forEach(key => {
+                        if (!this.data[key]) this.data[key] = [];
+                    });
                 } else {
                     // First time load: save default data to Firebase
                     this.data = JSON.parse(JSON.stringify(defaultData));
                     this.save();
                 }
 
-                // Initial Data Checks
+                // Initial Data Checks - Extra Safety
                 if(!this.data.procedures) this.data.procedures = [];
                 if(!this.data.notifications) this.data.notifications = [];
                 
@@ -1098,9 +1104,11 @@
             renderList: function(type, dataArray) {
                 const ul = document.getElementById(type + '-list');
                 ul.innerHTML = '';
-                dataArray.forEach(item => {
-                    ul.innerHTML += `<li class="list-group-item"><span>${item.name}</span><div><i class="fas fa-edit text-warning action-btn" onclick="System.admin.editItem('${type}', '${item.id}')"></i><i class="fas fa-trash text-danger action-btn" onclick="System.admin.deleteItem('${type}', '${item.id}')"></i></div></li>`;
-                });
+                if(dataArray && dataArray.length > 0){
+                    dataArray.forEach(item => {
+                        ul.innerHTML += `<li class="list-group-item"><span>${item.name}</span><div><i class="fas fa-edit text-warning action-btn" onclick="System.admin.editItem('${type}', '${item.id}')"></i><i class="fas fa-trash text-danger action-btn" onclick="System.admin.deleteItem('${type}', '${item.id}')"></i></div></li>`;
+                    });
+                }
             },
             renderStructurePreview: function() {
                 const container = document.getElementById('structure-preview');
@@ -1120,13 +1128,23 @@
                     container.innerHTML += html;
                 });
             },
-            addSchool: function() { const n = document.getElementById('new-school-name').value; if(n) { System.data.schools.push({id: Date.now(), name: n, stages:[]}); System.save(); this.renderAllLists(); document.getElementById('new-school-name').value=''; } },
+            addSchool: function() { 
+                const n = document.getElementById('new-school-name').value; 
+                if(n) { 
+                    // Safety check to ensure array exists
+                    if(!System.data.schools) System.data.schools = [];
+                    System.data.schools.push({id: Date.now(), name: n, stages:[]}); 
+                    System.save(); 
+                    this.renderAllLists(); 
+                    document.getElementById('new-school-name').value=''; 
+                } 
+            },
             addStage: function() { const sid = parseInt(document.getElementById('struct-school-select').value), n = document.getElementById('new-stage-name').value; if(sid && n) { System.data.schools.find(s=>s.id===sid).stages.push({id: this.genId(), name: n, grades:[]}); System.save(); System.ui.updateStagesDropdown(); this.renderStructurePreview(); } },
             addGrade: function() { const sid = parseInt(document.getElementById('struct-school-select').value), stid = document.getElementById('struct-stage-select').value, n = document.getElementById('new-grade-name').value; if(stid && n) { System.data.schools.find(s=>s.id===sid).stages.find(s=>s.id===stid).grades.push({id: this.genId(), name: n, classes:[]}); System.save(); System.ui.updateGradesDropdown(); this.renderStructurePreview(); } },
             addClass: function() { const sid = parseInt(document.getElementById('struct-school-select').value), stid = document.getElementById('struct-stage-select').value, gid = document.getElementById('struct-grade-select').value, n = document.getElementById('new-class-name').value; if(gid && n) { System.data.schools.find(s=>s.id===sid).stages.find(s=>s.id===stid).grades.find(g=>g.id===gid).classes.push({id: this.genId(), name: n}); System.save(); this.renderStructurePreview(); } },
-            addSubject: function() { const n = document.getElementById('new-subject-name').value; if(n) { System.data.subjects.push({id: Date.now(), name: n}); System.save(); this.renderList('subjects', System.data.subjects); document.getElementById('new-subject-name').value=''; } },
-            addWeek: function() { const n = document.getElementById('new-week-name').value; if(n) { System.data.weeks.push({id: Date.now(), name: n}); System.save(); this.renderList('weeks', System.data.weeks); document.getElementById('new-week-name').value=''; } },
-            addCriteria: function() { const n = document.getElementById('new-criteria-name').value; if(n) { System.data.criteria.push({id: Date.now(), name: n}); System.save(); this.renderList('criteria', System.data.criteria); document.getElementById('new-criteria-name').value=''; } },
+            addSubject: function() { const n = document.getElementById('new-subject-name').value; if(n) { if(!System.data.subjects) System.data.subjects = []; System.data.subjects.push({id: Date.now(), name: n}); System.save(); this.renderList('subjects', System.data.subjects); document.getElementById('new-subject-name').value=''; } },
+            addWeek: function() { const n = document.getElementById('new-week-name').value; if(n) { if(!System.data.weeks) System.data.weeks = []; System.data.weeks.push({id: Date.now(), name: n}); System.save(); this.renderList('weeks', System.data.weeks); document.getElementById('new-week-name').value=''; } },
+            addCriteria: function() { const n = document.getElementById('new-criteria-name').value; if(n) { if(!System.data.criteria) System.data.criteria = []; System.data.criteria.push({id: Date.now(), name: n}); System.save(); this.renderList('criteria', System.data.criteria); document.getElementById('new-criteria-name').value=''; } },
             
             // --- Edit Functions ---
             editItem: function(type, id) {
