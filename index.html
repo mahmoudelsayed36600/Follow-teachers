@@ -1172,9 +1172,71 @@
                     document.getElementById('new-school-name').value=''; 
                 } 
             },
-            addStage: function() { const sid = parseInt(document.getElementById('struct-school-select').value), n = document.getElementById('new-stage-name').value; if(sid && n) { System.data.schools.find(s=>s.id===sid).stages.push({id: this.genId(), name: n, grades:[]}); System.save(); System.ui.updateStagesDropdown(); this.renderStructurePreview(); } },
-            addGrade: function() { const sid = parseInt(document.getElementById('struct-school-select').value), stid = document.getElementById('struct-stage-select').value, n = document.getElementById('new-grade-name').value; if(stid && n) { System.data.schools.find(s=>s.id===sid).stages.find(s=>s.id===stid).grades.push({id: this.genId(), name: n, classes:[]}); System.save(); System.ui.updateGradesDropdown(); this.renderStructurePreview(); } },
-            addClass: function() { const sid = parseInt(document.getElementById('struct-school-select').value), stid = document.getElementById('struct-stage-select').value, gid = document.getElementById('struct-grade-select').value, n = document.getElementById('new-class-name').value; if(gid && n) { System.data.schools.find(s=>s.id===sid).stages.find(s=>s.id===stid).grades.find(g=>g.id===gid).classes.push({id: this.genId(), name: n}); System.save(); this.renderStructurePreview(); } },
+            addStage: function() { 
+    const sid = parseInt(document.getElementById('struct-school-select').value);
+    const n = document.getElementById('new-stage-name').value; 
+    
+    if(sid && n) { 
+        const school = System.data.schools.find(s => s.id === sid);
+        if(school) {
+            if(!school.stages) school.stages = []; // إصلاح: إنشاء المصفوفة إذا لم تكن موجودة
+            school.stages.push({id: this.genId(), name: n, grades:[]}); 
+            System.save(); 
+            System.ui.updateStagesDropdown(); 
+            this.renderStructurePreview(); 
+            document.getElementById('new-stage-name').value = ''; // تفريغ الحقل
+        }
+    } else {
+        alert('الرجاء اختيار المدرسة وكتابة اسم المرحلة');
+    }
+},
+            addGrade: function() { 
+    const sid = parseInt(document.getElementById('struct-school-select').value);
+    const stid = document.getElementById('struct-stage-select').value;
+    const n = document.getElementById('new-grade-name').value; 
+    
+    if(sid && stid && n) { 
+        const school = System.data.schools.find(s => s.id === sid);
+        if(school) {
+            const stage = school.stages.find(s => s.id === stid);
+            if(stage) {
+                if(!stage.grades) stage.grades = []; // إصلاح: إنشاء المصفوفة إذا لم تكن موجودة
+                stage.grades.push({id: this.genId(), name: n, classes:[]}); 
+                System.save(); 
+                System.ui.updateGradesDropdown(); 
+                this.renderStructurePreview(); 
+                document.getElementById('new-grade-name').value = ''; // تفريغ الحقل
+            }
+        }
+    } else {
+        alert('الرجاء اختيار المرحلة وكتابة اسم الصف');
+    }
+},
+           addClass: function() { 
+    const sid = parseInt(document.getElementById('struct-school-select').value);
+    const stid = document.getElementById('struct-stage-select').value;
+    const gid = document.getElementById('struct-grade-select').value;
+    const n = document.getElementById('new-class-name').value; 
+    
+    if(sid && stid && gid && n) { 
+        const school = System.data.schools.find(s => s.id === sid);
+        if(school) {
+            const stage = school.stages.find(s => s.id === stid);
+            if(stage) {
+                const grade = stage.grades.find(g => g.id === gid);
+                if(grade) {
+                    if(!grade.classes) grade.classes = []; // إصلاح: إنشاء المصفوفة إذا لم تكن موجودة
+                    grade.classes.push({id: this.genId(), name: n}); 
+                    System.save(); 
+                    this.renderStructurePreview(); 
+                    document.getElementById('new-class-name').value = ''; // تفريغ الحقل
+                }
+            }
+        }
+    } else {
+        alert('الرجاء اختيار الصف وكتابة اسم الفصل');
+    }
+},
             addSubject: function() { const n = document.getElementById('new-subject-name').value; if(n) { if(!System.data.subjects) System.data.subjects = []; System.data.subjects.push({id: Date.now(), name: n}); System.save(); this.renderList('subjects', System.data.subjects); document.getElementById('new-subject-name').value=''; } },
             addWeek: function() { const n = document.getElementById('new-week-name').value; if(n) { if(!System.data.weeks) System.data.weeks = []; System.data.weeks.push({id: Date.now(), name: n}); System.save(); this.renderList('weeks', System.data.weeks); document.getElementById('new-week-name').value=''; } },
             addCriteria: function() { const n = document.getElementById('new-criteria-name').value; if(n) { if(!System.data.criteria) System.data.criteria = []; System.data.criteria.push({id: Date.now(), name: n}); System.save(); this.renderList('criteria', System.data.criteria); document.getElementById('new-criteria-name').value=''; } },
