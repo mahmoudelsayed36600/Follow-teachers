@@ -74,6 +74,8 @@
         .action-btn { cursor: pointer; margin-left: 5px; opacity: 0.7; transition: 0.2s; }
         .action-btn:hover { opacity: 1; transform: scale(1.1); }
         .cursor-pointer { cursor: pointer; }
+        .tree-action { cursor: pointer; font-size: 0.8rem; margin-right: 5px; opacity: 0.6; }
+        .tree-action:hover { opacity: 1; transform: scale(1.1); }
 
         @media print {
             .sidebar, .no-print, #login-section, .btn, .modal { display: none !important; }
@@ -185,8 +187,8 @@
                             </div>
                         </div>
                         <div class="mt-3">
-                            <h6 class="small text-muted">معاينة الهيكل:</h6>
-                            <div id="structure-preview" class="border p-2 bg-white rounded" style="max-height: 200px; overflow-y: auto;"></div>
+                            <h6 class="small text-muted">معاينة الهيكل (يمكنك التعديل والحذف):</h6>
+                            <div id="structure-preview" class="border p-2 bg-white rounded" style="max-height: 250px; overflow-y: auto;"></div>
                         </div>
                     </div>
                 </div>
@@ -569,7 +571,48 @@
                 genId: () => '_' + Math.random().toString(36).substr(2, 9),
                 renderAllLists: function() { this.renderList('schools', System.data.schools); this.renderList('subjects', System.data.subjects); this.renderList('weeks', System.data.weeks); this.renderList('criteria', System.data.criteria); const sel = document.getElementById('struct-school-select'); sel.innerHTML = '<option value="">اختر المدرسة</option>'; System.data.schools.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`); this.renderStructurePreview(); },
                 renderList: function(type, dataArray) { const ul = document.getElementById(type + '-list'); ul.innerHTML = ''; if(dataArray && dataArray.length > 0){ dataArray.forEach(item => { ul.innerHTML += `<li class="list-group-item"><span>${item.name}</span><div><i class="fas fa-edit text-warning action-btn" onclick="System.admin.editItem('${type}', '${item.id}')"></i><i class="fas fa-trash text-danger action-btn" onclick="System.admin.deleteItem('${type}', '${item.id}')"></i></div></li>`; }); } },
-                renderStructurePreview: function() { const container = document.getElementById('structure-preview'); container.innerHTML = ''; System.data.schools.forEach(s => { let html = `<div class="mb-2"><strong class="text-primary"><i class="fas fa-school"></i> ${s.name}</strong><ul class="mb-1">`; if(s.stages) s.stages.forEach(st => { html += `<li>${st.name} <ul>`; if(st.grades) st.grades.forEach(g => { html += `<li>${g.name} : `; if(g.classes) g.classes.forEach(c => { html += `<span class="badge bg-light text-dark border me-1">${c.name}</span>`; }); html += `</li>`; }); html += `</ul></li>`; }); html += `</ul></div>`; container.innerHTML += html; }); },
+                
+                renderStructurePreview: function() { 
+                    const container = document.getElementById('structure-preview'); 
+                    container.innerHTML = ''; 
+                    System.data.schools.forEach(s => { 
+                        let html = `<div class="mb-2"><strong class="text-primary"><i class="fas fa-school"></i> ${s.name}</strong> 
+                        <i class="fas fa-pen text-warning tree-action" onclick="System.admin.editItem('schools', ${s.id})"></i>
+                        <i class="fas fa-trash text-danger tree-action" onclick="System.admin.deleteItem('schools', ${s.id})"></i>
+                        <ul class="mb-1">`; 
+                        if(s.stages) s.stages.forEach(st => { 
+                            html += `<li>${st.name} 
+                            <i class="fas fa-pen text-warning tree-action" onclick="System.admin.editStage(${s.id}, '${st.id}')"></i>
+                            <i class="fas fa-trash text-danger tree-action" onclick="System.admin.deleteStage(${s.id}, '${st.id}')"></i>
+                            <ul>`; 
+                            if(st.grades) st.grades.forEach(g => { 
+                                html += `<li>${g.name} 
+                                <i class="fas fa-pen text-warning tree-action" onclick="System.admin.editGrade(${s.id}, '${st.id}', '${g.id}')"></i>
+                                <i class="fas fa-trash text-danger tree-action" onclick="System.admin.deleteGrade(${s.id}, '${st.id}', '${g.id}')"></i>
+                                : `; 
+                                if(g.classes) g.classes.forEach(c => { 
+                                    html += `<span class="badge bg-light text-dark border me-1">${c.name} 
+                                    <i class="fas fa-pen text-warning text-dark cursor-pointer ms-1" style="font-size:0.7em" onclick="System.admin.editClass(${s.id}, '${st.id}', '${g.id}', '${c.id}')"></i>
+                                    <i class="fas fa-times text-danger cursor-pointer" style="font-size:0.7em" onclick="System.admin.deleteClass(${s.id}, '${st.id}', '${g.id}', '${c.id}')"></i>
+                                    </span>`; 
+                                }); 
+                                html += `</li>`; 
+                            }); 
+                            html += `</ul></li>`; 
+                        }); 
+                        html += `</ul></div>`; 
+                        container.innerHTML += html; 
+                    }); 
+                },
+
+                // Helper Functions for Nested Deletion/Editing
+                editStage: function(sid, stid) { const s = System.data.schools.find(x=>x.id==sid); const st = s.stages.find(x=>x.id==stid); const n = prompt('تعديل المرحلة', st.name); if(n) { st.name=n; System.save(); this.renderAllLists(); } },
+                deleteStage: function(sid, stid) { if(confirm('حذف المرحلة؟')) { const s = System.data.schools.find(x=>x.id==sid); s.stages = s.stages.filter(x=>x.id!=stid); System.save(); this.renderAllLists(); } },
+                editGrade: function(sid, stid, gid) { const s = System.data.schools.find(x=>x.id==sid); const st = s.stages.find(x=>x.id==stid); const g = st.grades.find(x=>x.id==gid); const n = prompt('تعديل الصف', g.name); if(n) { g.name=n; System.save(); this.renderAllLists(); } },
+                deleteGrade: function(sid, stid, gid) { if(confirm('حذف الصف؟')) { const s = System.data.schools.find(x=>x.id==sid); const st = s.stages.find(x=>x.id==stid); st.grades = st.grades.filter(x=>x.id!=gid); System.save(); this.renderAllLists(); } },
+                editClass: function(sid, stid, gid, cid) { const s = System.data.schools.find(x=>x.id==sid); const st = s.stages.find(x=>x.id==stid); const g = st.grades.find(x=>x.id==gid); const c = g.classes.find(x=>x.id==cid); const n = prompt('تعديل الفصل', c.name); if(n) { c.name=n; System.save(); this.renderAllLists(); } },
+                deleteClass: function(sid, stid, gid, cid) { if(confirm('حذف الفصل؟')) { const s = System.data.schools.find(x=>x.id==sid); const st = s.stages.find(x=>x.id==stid); const g = st.grades.find(x=>x.id==gid); g.classes = g.classes.filter(x=>x.id!=cid); System.save(); this.renderAllLists(); } },
+
                 addSchool: function() { const n = document.getElementById('new-school-name').value; if(n) { if(!System.data.schools) System.data.schools = []; System.data.schools.push({id: Date.now(), name: n, stages:[]}); System.save(); this.renderAllLists(); document.getElementById('new-school-name').value=''; } },
                 addStage: function() { const sid = parseInt(document.getElementById('struct-school-select').value); const n = document.getElementById('new-stage-name').value; if(sid && n) { const school = System.data.schools.find(s => s.id === sid); if(school) { if(!school.stages) school.stages = []; school.stages.push({id: this.genId(), name: n, grades:[]}); System.save(); System.ui.updateStagesDropdown(); this.renderStructurePreview(); document.getElementById('new-stage-name').value = ''; } } else { alert('اختر المدرسة'); } },
                 addGrade: function() { const sid = parseInt(document.getElementById('struct-school-select').value); const stid = document.getElementById('struct-stage-select').value; const n = document.getElementById('new-grade-name').value; if(sid && stid && n) { const school = System.data.schools.find(s => s.id === sid); if(school) { const stage = school.stages.find(s => s.id === stid); if(stage) { if(!stage.grades) stage.grades = []; stage.grades.push({id: this.genId(), name: n, classes:[]}); System.save(); System.ui.updateGradesDropdown(); this.renderStructurePreview(); document.getElementById('new-grade-name').value = ''; } } } else { alert('اختر المرحلة'); } },
@@ -724,7 +767,14 @@
 
             utils: {
                 generatePassword: function() { return Math.random().toString(36).slice(-8); },
-                sendWhatsapp: function(mobile, teacherId, msg, missingItemsStr) { if(!mobile) return; const today = new Date(); System.data.notifications.push({ id: Date.now(), teacherId: parseInt(teacherId), type: 'whatsapp_alert', date: today.toISOString().split('T')[0], day: '-', details: msg, missing: missingItemsStr }); System.save(); System.ui.updateNotificationCount(); window.open(`https://wa.me/${mobile}?text=${encodeURIComponent(msg)}`, '_blank'); },
+                sendWhatsapp: function(mobile, teacherId, msg, missingItemsStr) { 
+                    if(!mobile) return; 
+                    const today = new Date(); 
+                    System.data.notifications.push({ id: Date.now(), teacherId: parseInt(teacherId), type: 'whatsapp_alert', date: today.toISOString().split('T')[0], day: '-', details: msg, missing: missingItemsStr }); 
+                    System.save(); 
+                    System.ui.updateNotificationCount(); 
+                    window.open(`https://wa.me/${mobile}?text=${encodeURIComponent(msg)}`, '_blank'); 
+                },
                 printAllNotifications: function() { if(System.data.notifications.length === 0) return alert('لا توجد إشعارات'); let html = `<div style="direction: rtl; text-align: right; padding: 20px;"><h2 style="text-align: center;">سجل الإشعارات</h2><table style="width: 100%; border-collapse: collapse; border: 1px solid #000;"><thead><tr style="background: #f0f0f0;"><th style="border: 1px solid #000; padding: 8px;">التاريخ</th><th style="border: 1px solid #000; padding: 8px;">المعلم</th><th style="border: 1px solid #000; padding: 8px;">التفاصيل</th></tr></thead><tbody>`; [...System.data.notifications].reverse().forEach(n => { const t = System.data.users.find(u => u.id === n.teacherId)?.name || 'غير معروف'; const fullText = n.details + (n.missing ? `<br><small><b>النواقص:</b> ${n.missing}</small>` : ''); html += `<tr><td style="border: 1px solid #000; padding: 8px;">${n.date}</td><td style="border: 1px solid #000; padding: 8px;">${t}</td><td style="border: 1px solid #000; padding: 8px;">${fullText}</td></tr>`; }); html += `</tbody></table></div>`; document.getElementById('print-area-container').innerHTML = html; document.body.classList.add('printing-notification'); window.print(); document.body.classList.remove('printing-notification'); },
                 getSubjectName: function(id) { return System.data.subjects.find(s=>s.id == id)?.name || ''; }
             },
@@ -780,8 +830,12 @@
                     const tbody = document.querySelector(`#${tableId} tbody`);
                     tbody.innerHTML = '';
                     const isAdmin = System.currentUser.role === 'admin';
+                    const teacherName = System.data.users.find(u => u.id === teacherId)?.name || '';
+
                     data.forEach(p => {
-                        let tools = `<i class="fab fa-whatsapp text-success cursor-pointer fa-lg" onclick="System.utils.sendWhatsapp('${mobile}', '${teacherId}', 'بخصوص: ${p.situation} - ${p.action}', '')"></i>`;
+                        const message = `المكرم المعلم المحترم / ${teacherName}\nنود إحاطتكم أنه تم اتخاذ إجراء مع الموقف : ${p.situation}\nوكان الإجراء كالتالي : ${p.action}\n، مع العلم أن هذه الرسالة الكترونية من نظام متابعة المعلمين تلقائيا`;
+                        
+                        let tools = `<i class="fab fa-whatsapp text-success cursor-pointer fa-lg" onclick="System.utils.sendWhatsapp('${mobile}', '${teacherId}', \`${message}\`, '')"></i>`;
                         if(isAdmin) {
                             tools += ` <i class="fas fa-edit text-warning cursor-pointer ms-2" onclick="System.procedures.edit(${p.id})"></i>`;
                             tools += ` <i class="fas fa-trash text-danger cursor-pointer ms-2" onclick="System.procedures.delete(${p.id})"></i>`;
