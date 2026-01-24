@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام متابعة المعلمين - النسخة السحابية</title>
+    <title>نظام متابعة المعلمين - النسخة المتكاملة</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -291,12 +291,17 @@
                 </div>
                 <div class="table-responsive"><table class="table table-bordered table-sm text-center align-middle" id="criteria-stats-table"><thead class="table-secondary"><tr><th>البند</th><th>التفعيل</th><th>الزيارات</th><th>النسبة %</th></tr></thead><tbody></tbody></table></div>
             </div>
-            <div class="row g-2 mb-3 no-print">
-                <div class="col-md-3"><select id="dash-week" class="form-select" onchange="System.dashboard.renderMonitoringStatus()"></select></div>
-                <div class="col-md-3"><button class="btn btn-primary" onclick="System.dashboard.renderMonitoringStatus()">تحديث الحالة</button></div>
-            </div>
+            
             <div class="section-card">
-                <h5 class="mb-3">الفصول غير المكتملة</h5>
+                 <h5 class="mb-3 border-bottom pb-2">فلترة الفصول غير المكتملة</h5>
+                <div class="row g-2 mb-3 no-print align-items-end">
+                    <div class="col-md-2"><label class="small">الأسبوع</label><select id="dash-week" class="form-select"></select></div>
+                    <div class="col-md-2"><label class="small">المرحلة</label><select id="dash-stage" class="form-select" onchange="System.dashboard.updateDashGrades()"></select></div>
+                    <div class="col-md-2"><label class="small">الصف</label><select id="dash-grade" class="form-select" onchange="System.dashboard.updateDashClasses()"></select></div>
+                    <div class="col-md-2"><label class="small">الفصل</label><select id="dash-class" class="form-select"></select></div>
+                    <div class="col-md-2"><label class="small">بحث بالاسم</label><input type="text" id="dash-search-name" class="form-control" placeholder="اسم المعلم"></div>
+                    <div class="col-md-2"><button class="btn btn-primary w-100" onclick="System.dashboard.renderMonitoringStatus()">تحديث الحالة</button></div>
+                </div>
                 <div class="table-responsive"><table class="table table-bordered table-hover" id="monitoring-table"><thead class="table-danger"><tr><th>المرحلة</th><th>الفصل</th><th>الأسبوع</th><th>المادة</th><th>المعلم</th><th>المنسق</th><th>النقص</th><th>مراسلة</th></tr></thead><tbody></tbody></table></div>
             </div>
         </div>
@@ -315,7 +320,7 @@
             <div class="section-card no-print">
                 <div class="row g-3">
                     <div class="col-md-4"><label class="small">المعلم</label><select id="proc-teacher" class="form-select"></select></div>
-                    <div class="col-md-2"><label class="small">النوع</label><select id="proc-type" class="form-select"><option value="praise">شكر</option><option value="note">ملاحظة</option><option value="verbal_warning">تنبيه شفهي</option><option value="written_warning">تنبيه كتابي</option><option value="violation">مخالفة</option></select></div>
+                    <div class="col-md-2"><label class="small">النوع</label><select id="proc-type" class="form-select"><option value="praise">شكر وثناء</option><option value="note">ملاحظة</option><option value="verbal_warning">تنبيه شفهي</option><option value="written_warning">تنبيه كتابي</option><option value="violation">مخالفة</option></select></div>
                     <div class="col-md-3"><label class="small">التاريخ</label><input type="date" id="proc-date" class="form-control"></div>
                     <div class="col-md-3"><label class="small">اليوم</label><input type="text" id="proc-day" class="form-control"></div>
                     <div class="col-md-6"><textarea id="proc-situation" class="form-control" rows="2" placeholder="الموقف"></textarea></div>
@@ -335,21 +340,30 @@
                 <div class="section-card border-top border-5 border-primary">
                     <div class="d-flex justify-content-between"><h4 id="tf-name">الاسم</h4><span id="tf-school" class="badge bg-secondary">المدرسة</span></div>
                     <div class="row mt-4 text-center">
-                        <div class="col-md-4"><div class="card bg-success text-white p-3"><h3 id="tf-praise-count">0</h3><small>ثناء</small></div></div>
-                        <div class="col-md-4"><div class="card bg-danger text-white p-3"><h3 id="tf-violation-count">0</h3><small>مخالفات</small></div></div>
-                        <div class="col-md-4"><div class="card bg-warning text-dark p-3"><h3 id="tf-gaps-count">0</h3><small>نواقص</small></div></div>
+                        <div class="col-md-2"><div class="card bg-success text-white p-2"><h4 id="tf-praise-count">0</h4><small>ثناء</small></div></div>
+                        <div class="col-md-2"><div class="card bg-info text-white p-2"><h4 id="tf-note-count">0</h4><small>ملاحظات</small></div></div>
+                        <div class="col-md-2"><div class="card bg-secondary text-white p-2"><h4 id="tf-verbal-count">0</h4><small>ت. شفهي</small></div></div>
+                        <div class="col-md-2"><div class="card bg-dark text-white p-2"><h4 id="tf-written-count">0</h4><small>ت. كتابي</small></div></div>
+                        <div class="col-md-2"><div class="card bg-danger text-white p-2"><h4 id="tf-violation-count">0</h4><small>مخالفات</small></div></div>
+                        <div class="col-md-2"><div class="card bg-warning text-dark p-2"><h4 id="tf-gaps-count">0</h4><small>نواقص</small></div></div>
                     </div>
                 </div>
                 <div class="section-card">
                     <ul class="nav nav-tabs mb-3" id="teacherFileTabs" role="tablist">
-                        <li class="nav-item"><button class="nav-link active text-danger" id="tab-gaps-btn" data-bs-toggle="tab" data-bs-target="#tab-gaps" type="button">النواقص</button></li>
-                        <li class="nav-item"><button class="nav-link text-dark" id="tab-violations-btn" data-bs-toggle="tab" data-bs-target="#tab-violations" type="button">المخالفات</button></li>
-                        <li class="nav-item"><button class="nav-link text-success" id="tab-positive-btn" data-bs-toggle="tab" data-bs-target="#tab-positive" type="button">التميز</button></li>
+                        <li class="nav-item"><button class="nav-link active text-danger" data-bs-toggle="tab" data-bs-target="#tab-gaps" type="button">النواقص</button></li>
+                        <li class="nav-item"><button class="nav-link text-success" data-bs-toggle="tab" data-bs-target="#tab-positive" type="button">التميز</button></li>
+                        <li class="nav-item"><button class="nav-link text-info" data-bs-toggle="tab" data-bs-target="#tab-notes" type="button">الملاحظات</button></li>
+                        <li class="nav-item"><button class="nav-link text-secondary" data-bs-toggle="tab" data-bs-target="#tab-verbal" type="button">تنبيه شفهي</button></li>
+                        <li class="nav-item"><button class="nav-link text-dark" data-bs-toggle="tab" data-bs-target="#tab-written" type="button">تنبيه كتابي</button></li>
+                        <li class="nav-item"><button class="nav-link text-danger" data-bs-toggle="tab" data-bs-target="#tab-violations" type="button">المخالفات</button></li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane fade show active" id="tab-gaps" role="tabpanel"><div class="table-responsive"><table class="table table-bordered table-striped" id="table-gaps"><thead class="table-light"><tr><th>الفصل</th><th>الأسبوع</th><th>المادة</th><th>التاريخ</th><th>عدد النواقص</th><th>تفاصيل</th><th>الأداء %</th></tr></thead><tbody></tbody></table></div></div>
-                        <div class="tab-pane fade" id="tab-violations" role="tabpanel"><div class="table-responsive"><table class="table table-bordered" id="table-violations"><thead class="table-dark"><tr><th>النوع</th><th>التاريخ</th><th>الموقف</th><th>الإجراء</th></tr></thead><tbody></tbody></table></div></div>
-                        <div class="tab-pane fade" id="tab-positive" role="tabpanel"><div class="table-responsive"><table class="table table-bordered table-success" id="table-praise"><thead class="bg-success text-white"><tr><th>السياق</th><th>التاريخ</th><th>النوع</th><th>السبب</th><th>الإجراء</th></tr></thead><tbody></tbody></table></div></div>
+                        <div class="tab-pane fade" id="tab-positive" role="tabpanel"><div class="table-responsive"><table class="table table-bordered table-success" id="table-praise"><thead class="bg-success text-white"><tr><th>التاريخ</th><th>الموقف</th><th>الإجراء</th><th>أدوات</th></tr></thead><tbody></tbody></table></div></div>
+                        <div class="tab-pane fade" id="tab-notes" role="tabpanel"><div class="table-responsive"><table class="table table-bordered table-info" id="table-notes"><thead class="bg-info text-white"><tr><th>التاريخ</th><th>الموقف</th><th>الإجراء</th><th>أدوات</th></tr></thead><tbody></tbody></table></div></div>
+                        <div class="tab-pane fade" id="tab-verbal" role="tabpanel"><div class="table-responsive"><table class="table table-bordered" id="table-verbal"><thead class="bg-secondary text-white"><tr><th>التاريخ</th><th>الموقف</th><th>الإجراء</th><th>أدوات</th></tr></thead><tbody></tbody></table></div></div>
+                        <div class="tab-pane fade" id="tab-written" role="tabpanel"><div class="table-responsive"><table class="table table-bordered" id="table-written"><thead class="bg-dark text-white"><tr><th>التاريخ</th><th>الموقف</th><th>الإجراء</th><th>أدوات</th></tr></thead><tbody></tbody></table></div></div>
+                        <div class="tab-pane fade" id="tab-violations" role="tabpanel"><div class="table-responsive"><table class="table table-bordered table-danger" id="table-violations"><thead class="bg-danger text-white"><tr><th>التاريخ</th><th>الموقف</th><th>الإجراء</th><th>أدوات</th></tr></thead><tbody></tbody></table></div></div>
                     </div>
                 </div>
             </div>
@@ -371,7 +385,8 @@
                     <div class="tab-pane fade show active" id="stats" role="tabpanel">
                         <div class="row">
                             <div class="col-md-4 mb-3"><div class="card p-2"><h6 class="text-center">الأداء العام</h6><canvas id="chart-pie"></canvas></div></div>
-                            <div class="col-md-8 mb-3"><div class="card p-2"><h6 class="text-center">أفضل المعلمين</h6><canvas id="chart-bar"></canvas></div></div>
+                            <div class="col-md-4 mb-3"><div class="card p-2"><h6 class="text-center">أفضل المعلمين</h6><canvas id="chart-bar"></canvas></div></div>
+                            <div class="col-md-4 mb-3"><div class="card p-2"><h6 class="text-center">أفضل المنسقين</h6><canvas id="chart-coordinator"></canvas></div></div>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="perf" role="tabpanel"><div class="table-responsive"><table class="table table-bordered table-striped" id="report-table"><thead class="table-light"><tr><th>المعلم</th><th>المادة</th><th>الحصص</th><th>البنود المفعلة</th><th>الإنجاز %</th></tr></thead><tbody></tbody></table></div></div>
@@ -601,9 +616,106 @@
             },
 
             dashboard: {
-                init: function() { const wSel = document.getElementById('dash-week'); wSel.innerHTML = ''; System.data.weeks.forEach(w => wSel.innerHTML += `<option value="${w.id}">${w.name}</option>`); this.renderStats(); this.renderMonitoringStatus(); this.updateStatsFilters('all'); },
+                init: function() { 
+                    const wSel = document.getElementById('dash-week'); wSel.innerHTML = ''; 
+                    System.data.weeks.forEach(w => wSel.innerHTML += `<option value="${w.id}">${w.name}</option>`); 
+                    this.initDashFilters();
+                    this.renderStats(); 
+                    this.renderMonitoringStatus(); 
+                    this.updateStatsFilters('all'); 
+                },
+                initDashFilters: function() {
+                    // Populate Stage dropdown
+                    const stageSel = document.getElementById('dash-stage');
+                    stageSel.innerHTML = '<option value="">المرحلة / الجميع</option>';
+                    const userSchoolId = System.currentUser.schoolId;
+                    const school = System.data.schools.find(s => s.id === userSchoolId);
+                    if(school && school.stages) {
+                         school.stages.forEach(s => stageSel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
+                    } else if (System.currentUser.role === 'admin') {
+                        System.data.schools.forEach(s => s.stages.forEach(st => stageSel.innerHTML += `<option value="${st.id}">${s.name} - ${st.name}</option>`));
+                    }
+                    this.updateDashGrades();
+                },
+                updateDashGrades: function() {
+                    const stageId = document.getElementById('dash-stage').value;
+                    const gradeSel = document.getElementById('dash-grade');
+                    gradeSel.innerHTML = '<option value="">الصف / الجميع</option>';
+                    document.getElementById('dash-class').innerHTML = '<option value="">الفصل / الجميع</option>';
+                    
+                    if(stageId) {
+                         // Find grades for this stage (simplified lookup)
+                         System.data.schools.forEach(s => s.stages.forEach(st => {
+                             if(st.id == stageId) st.grades.forEach(g => gradeSel.innerHTML += `<option value="${g.id}">${g.name}</option>`);
+                         }));
+                    }
+                },
+                updateDashClasses: function() {
+                    const gradeId = document.getElementById('dash-grade').value;
+                    const classSel = document.getElementById('dash-class');
+                    classSel.innerHTML = '<option value="">الفصل / الجميع</option>';
+                    if(gradeId) {
+                         System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => {
+                             if(g.id == gradeId) g.classes.forEach(c => classSel.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+                         })));
+                    }
+                },
                 renderStats: function() { const container = document.getElementById('general-stats-row'); const createCard = (title, val, color, icon) => `<div class="col-md-3"><div class="stat-card bg-${color}"><h3>${val}</h3><p>${title}</p><i class="fas ${icon}"></i></div></div>`; let html = ''; if (System.currentUser.role === 'admin') { html += createCard('المدارس', System.data.schools.length, 'primary', 'fa-school'); html += createCard('المستخدمين', System.data.users.length, 'success', 'fa-users'); } html += createCard('التسكينات', System.data.assignments.length, 'warning', 'fa-link'); html += createCard('الإشعارات', System.data.notifications.length, 'danger', 'fa-bell'); container.innerHTML = html; },
-                renderMonitoringStatus: function() { const weekId = parseInt(document.getElementById('dash-week').value); const weekName = System.data.weeks.find(w => w.id === weekId)?.name || '-'; const tbody = document.querySelector('#monitoring-table tbody'); tbody.innerHTML = ''; const criteriaCount = System.data.criteria.length; let incompleteCount = 0; System.data.assignments.forEach(assign => { const teacher = System.data.users.find(u => u.id === assign.teacherId); if(!teacher) return; const viewer = System.currentUser; if(viewer.role !== 'admin' && teacher.schoolId !== viewer.schoolId) return; if(viewer.role === 'coordinator' && (!viewer.scope?.gradeIds?.includes(this.getGradeId(assign.classId)))) return; const evals = System.data.evaluations.filter(e => e.weekId === weekId && e.classId === assign.classId && e.teacherId === teacher.id); const missingCount = criteriaCount - evals.length; if(missingCount > 0) { incompleteCount++; let stageName='', className='', gradeId=''; System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => { if(c.id === assign.classId) { stageName = st.name; className = `${g.name} - ${c.name}`; gradeId=g.id; } })))); const coord = System.data.users.find(u => u.role === 'coordinator' && u.schoolId === teacher.schoolId && u.scope?.gradeIds?.includes(gradeId)); const coordName = coord ? coord.name : '<span class="text-muted text-small">غير محدد</span>'; const missingIds = System.data.criteria.map(c => c.id).filter(cid => !evals.find(e => e.criteriaId === cid)); const missingNames = missingIds.map(id => System.data.criteria.find(c => c.id === id).name); const subjectName = System.data.subjects.find(s => s.id === assign.subjectId)?.name || 'غير محدد'; const msg = `أثناء زيارة فصل ${className} (مادة ${subjectName}) وجدت هذه البنود غير مفعلة (${missingNames.join('، ')}) ...`; tbody.innerHTML += `<tr><td>${stageName}</td><td>${className}</td><td>${weekName}</td><td>${subjectName}</td><td>${teacher.name}</td><td>${coordName}</td><td class="text-danger fw-bold cursor-pointer" onclick="System.dashboard.showMissingDetails('${missingNames.join(',')}')">${missingCount}</td><td><button class="btn btn-sm btn-success" onclick="System.utils.sendWhatsapp('${teacher.mobile}', '${teacher.id}', \`${msg}\`, '${missingNames.join(' - ')}')">مراسلة</button></td></tr>`; } }); if(incompleteCount === 0) tbody.innerHTML = '<tr><td colspan="8" class="text-center text-success">جميع الفصول مكتملة الرصد لهذا الأسبوع</td></tr>'; },
+                renderMonitoringStatus: function() { 
+                    const weekId = parseInt(document.getElementById('dash-week').value); 
+                    const weekName = System.data.weeks.find(w => w.id === weekId)?.name || '-'; 
+                    
+                    // Filters
+                    const filterStage = document.getElementById('dash-stage').value;
+                    const filterGrade = document.getElementById('dash-grade').value;
+                    const filterClass = document.getElementById('dash-class').value;
+                    const filterName = document.getElementById('dash-search-name').value.toLowerCase();
+
+                    const tbody = document.querySelector('#monitoring-table tbody'); 
+                    tbody.innerHTML = ''; 
+                    const criteriaCount = System.data.criteria.length; 
+                    let incompleteCount = 0; 
+                    
+                    System.data.assignments.forEach(assign => { 
+                        const teacher = System.data.users.find(u => u.id === assign.teacherId); 
+                        if(!teacher) return; 
+                        
+                        // Apply Name Filter
+                        if(filterName && !teacher.name.toLowerCase().includes(filterName)) return;
+
+                        const viewer = System.currentUser; 
+                        if(viewer.role !== 'admin' && teacher.schoolId !== viewer.schoolId) return; 
+                        if(viewer.role === 'coordinator' && (!viewer.scope?.gradeIds?.includes(this.getGradeId(assign.classId)))) return; 
+                        
+                        // Resolve Hierarchy info
+                        let stageId='', gradeId='', stageName='', className='';
+                        System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => { 
+                            if(c.id === assign.classId) { 
+                                stageId = st.id; gradeId = g.id; stageName = st.name; className = `${g.name} - ${c.name}`; 
+                            } 
+                        }))));
+
+                        // Apply Dropdown Filters
+                        if(filterStage && filterStage != stageId) return;
+                        if(filterGrade && filterGrade != gradeId) return;
+                        if(filterClass && filterClass != assign.classId) return;
+
+                        const evals = System.data.evaluations.filter(e => e.weekId === weekId && e.classId === assign.classId && e.teacherId === teacher.id); 
+                        const missingCount = criteriaCount - evals.length; 
+                        
+                        if(missingCount > 0) { 
+                            incompleteCount++; 
+                            const coord = System.data.users.find(u => u.role === 'coordinator' && u.schoolId === teacher.schoolId && u.scope?.gradeIds?.includes(gradeId)); 
+                            const coordName = coord ? coord.name : '<span class="text-muted text-small">غير محدد</span>'; 
+                            const missingIds = System.data.criteria.map(c => c.id).filter(cid => !evals.find(e => e.criteriaId === cid)); 
+                            const missingNames = missingIds.map(id => System.data.criteria.find(c => c.id === id).name); 
+                            const subjectName = System.data.subjects.find(s => s.id === assign.subjectId)?.name || 'غير محدد'; 
+                            const msg = `أثناء زيارة فصل ${className} (مادة ${subjectName}) وجدت هذه البنود غير مفعلة (${missingNames.join('، ')}) ...`; 
+                            tbody.innerHTML += `<tr><td>${stageName}</td><td>${className}</td><td>${weekName}</td><td>${subjectName}</td><td>${teacher.name}</td><td>${coordName}</td><td class="text-danger fw-bold cursor-pointer" onclick="System.dashboard.showMissingDetails('${missingNames.join(',')}')">${missingCount}</td><td><button class="btn btn-sm btn-success" onclick="System.utils.sendWhatsapp('${teacher.mobile}', '${teacher.id}', \`${msg}\`, '${missingNames.join(' - ')}')">مراسلة</button></td></tr>`; 
+                        } 
+                    }); 
+                    if(incompleteCount === 0) tbody.innerHTML = '<tr><td colspan="8" class="text-center text-success">جميع الفصول مكتملة الرصد لهذا الأسبوع (حسب الفلترة)</td></tr>'; 
+                },
                 getGradeId: function(classId) { let gid = null; System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => { if(c.id === classId) gid = g.id; })))); return gid; },
                 showMissingDetails: function(itemsString) { const items = itemsString.split(','); document.getElementById('missing-items-content').innerHTML = `<ul class="list-group">${items.map(i => `<li class="list-group-item list-group-item-danger">${i}</li>`).join('')}</ul>`; new bootstrap.Modal(document.getElementById('missingItemsModal')).show(); },
                 updateStatsFilters: function(level) { const schoolSel = document.getElementById('stats-school'); const gradeSel = document.getElementById('stats-grade'); const classSel = document.getElementById('stats-class'); if (level === 'all') { schoolSel.innerHTML = '<option value="all">الجميع</option>'; System.data.schools.forEach(s => schoolSel.innerHTML += `<option value="${s.id}">${s.name}</option>`); } if (level === 'school' || level === 'all') { gradeSel.innerHTML = '<option value="all">الجميع</option>'; const sid = schoolSel.value; if (sid !== 'all') { System.data.schools.find(s => s.id == sid)?.stages.forEach(st => st.grades.forEach(g => gradeSel.innerHTML += `<option value="${g.id}">${g.name}</option>`)); } } if (level === 'grade' || level === 'all') { classSel.innerHTML = '<option value="all">الجميع</option>'; const sid = schoolSel.value; const gid = gradeSel.value; if (sid !== 'all' && gid !== 'all') { let targetGrade = null; System.data.schools.find(s=>s.id == sid)?.stages.forEach(st => { const found = st.grades.find(g => g.id == gid); if(found) targetGrade = found; }); if (targetGrade) targetGrade.classes.forEach(c => classSel.innerHTML += `<option value="${c.id}">${c.name}</option>`); } } },
@@ -618,28 +730,131 @@
             },
 
             notifications: { render: function() { const list = document.getElementById('notif-list'); list.innerHTML = ''; [...System.data.notifications].reverse().forEach(n => { const t = System.data.users.find(u => u.id === n.teacherId)?.name || 'غير معروف'; const fullMessage = n.details + (n.missing ? `<br><span class="text-danger small"><strong>النواقص:</strong> ${n.missing}</span>` : ''); list.innerHTML += `<li class="list-group-item d-block"><div class="d-flex justify-content-between"><strong>${t}</strong><small class="text-muted">${n.date}</small></div><div class="mt-2" style="white-space: pre-wrap;">${fullMessage}</div></li>`; }); } },
-            procedures: { init: function() { const tSel = document.getElementById('proc-teacher'); tSel.innerHTML = ''; System.data.users.filter(u => u.role === 'teacher').forEach(t => tSel.innerHTML += `<option value="${t.id}">${t.name}</option>`); this.renderList(); }, add: function() { const tid = parseInt(document.getElementById('proc-teacher').value); const type = document.getElementById('proc-type').value; const date = document.getElementById('proc-date').value; const situation = document.getElementById('proc-situation').value; const action = document.getElementById('proc-action').value; if(tid && date) { System.data.procedures.push({id:Date.now(), teacherId:tid, type, date, situation, action}); System.save(); alert('تم الحفظ'); this.renderList(); } }, renderList: function() { const tbody = document.querySelector('#procedures-table tbody'); tbody.innerHTML = ''; System.data.procedures.forEach(p => { const t = System.data.users.find(u => u.id === p.teacherId)?.name || '-'; tbody.innerHTML += `<tr><td>${t}</td><td>${p.type}</td><td>${p.date}</td><td>${p.situation}</td><td>${p.action}</td></tr>`; }); } },
+            
+            procedures: { 
+                init: function() { const tSel = document.getElementById('proc-teacher'); tSel.innerHTML = ''; System.data.users.filter(u => u.role === 'teacher').forEach(t => tSel.innerHTML += `<option value="${t.id}">${t.name}</option>`); this.renderList(); }, 
+                add: function() { const tid = parseInt(document.getElementById('proc-teacher').value); const type = document.getElementById('proc-type').value; const date = document.getElementById('proc-date').value; const situation = document.getElementById('proc-situation').value; const action = document.getElementById('proc-action').value; if(tid && date) { System.data.procedures.push({id:Date.now(), teacherId:tid, type, date, situation, action}); System.save(); alert('تم الحفظ'); this.renderList(); } }, 
+                renderList: function() { const tbody = document.querySelector('#procedures-table tbody'); tbody.innerHTML = ''; System.data.procedures.forEach(p => { const t = System.data.users.find(u => u.id === p.teacherId)?.name || '-'; tbody.innerHTML += `<tr><td>${t}</td><td>${p.type}</td><td>${p.date}</td><td>${p.situation}</td><td>${p.action}</td></tr>`; }); },
+                delete: function(id) { if(confirm('حذف هذا الإجراء؟')) { System.data.procedures = System.data.procedures.filter(p => p.id !== id); System.save(); System.teacherFile.render(); System.procedures.renderList(); } },
+                edit: function(id) { const p = System.data.procedures.find(x => x.id === id); if(!p) return; const newSit = prompt('تعديل الموقف:', p.situation); const newAct = prompt('تعديل الإجراء:', p.action); if(newSit && newAct) { p.situation = newSit; p.action = newAct; System.save(); System.teacherFile.render(); System.procedures.renderList(); } }
+            },
             
             teacherFile: { 
                 init: function() { const sel = document.getElementById('file-teacher-select'); sel.innerHTML = '<option value="">اختر...</option>'; const isCoord = System.currentUser.role === 'coordinator'; const mySchool = System.currentUser.schoolId; System.data.users.filter(u => u.role === 'teacher').forEach(t => { if(!isCoord || (isCoord && t.schoolId === mySchool)) { sel.innerHTML += `<option value="${t.id}">${t.name}</option>`; } }); }, 
                 render: function() { 
-                    const tid = parseInt(document.getElementById('file-teacher-select').value); if(!tid) return document.getElementById('teacher-file-content').classList.add('hidden'); document.getElementById('teacher-file-content').classList.remove('hidden'); const t = System.data.users.find(u => u.id === tid); const schoolName = System.data.schools.find(s=>s.id === t.schoolId)?.name || '-'; document.getElementById('tf-name').innerText = t.name; document.getElementById('tf-school').innerText = schoolName; const praise = System.data.procedures.filter(p => p.teacherId === tid && p.type === 'praise'); const violations = System.data.procedures.filter(p => p.teacherId === tid && p.type !== 'praise'); const gapsTable = document.querySelector('#table-gaps tbody'); gapsTable.innerHTML = ''; let gapVisitsCount = 0; const distinctVisits = []; System.data.evaluations.filter(e => e.teacherId === tid).forEach(e => { const key = `${e.weekId}_${e.classId}`; if(!distinctVisits.includes(key)) distinctVisits.push(key); }); distinctVisits.forEach(key => { const [wid, cid] = key.split('_'); const weekName = System.data.weeks.find(w => w.id == wid)?.name || '-'; const evals = System.data.evaluations.filter(e => e.teacherId === tid && e.weekId == wid && e.classId == cid); if(evals.length > 0) { const date = evals[0].date; let className = ''; System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => { if(c.id === cid) className = `${c.name}`; })))); const assign = System.data.assignments.find(a => a.teacherId === tid && a.classId === cid); const subName = assign ? System.utils.getSubjectName(assign.subjectId) : '-'; const presentIds = evals.map(e => e.criteriaId); const missingCriteria = System.data.criteria.filter(c => !presentIds.includes(c.id)); const missingNames = missingCriteria.map(c => c.name); const missingCount = missingCriteria.length; if(missingCount > 0) { gapVisitsCount++; const performance = Math.round((presentIds.length / System.data.criteria.length) * 100); gapsTable.innerHTML += `<tr><td>${className}</td><td>${weekName}</td><td>${subName}</td><td>${date}</td><td class="text-danger fw-bold text-center">${missingCount}</td><td class="small text-muted">${missingNames.join(' ، ')}</td><td><span class="badge bg-${performance < 50 ? 'danger' : 'warning'}">${performance}%</span></td></tr>`; } } }); 
-                    document.getElementById('tf-praise-count').innerText = praise.length; document.getElementById('tf-violation-count').innerText = violations.length; document.getElementById('tf-gaps-count').innerText = gapVisitsCount;
-                    const tablePraise = document.querySelector('#table-praise tbody'); tablePraise.innerHTML = ''; praise.forEach(p => tablePraise.innerHTML += `<tr><td>-</td><td>${p.date}</td><td>${p.type}</td><td>${p.situation}</td><td>${p.action}</td></tr>`); const tableViol = document.querySelector('#table-violations tbody'); tableViol.innerHTML = ''; violations.forEach(p => tableViol.innerHTML += `<tr><td>${p.type}</td><td>${p.date}</td><td>${p.situation}</td><td>${p.action}</td></tr>`); 
-                } 
+                    const tid = parseInt(document.getElementById('file-teacher-select').value); 
+                    if(!tid) return document.getElementById('teacher-file-content').classList.add('hidden'); 
+                    document.getElementById('teacher-file-content').classList.remove('hidden'); 
+                    
+                    const t = System.data.users.find(u => u.id === tid); 
+                    const schoolName = System.data.schools.find(s=>s.id === t.schoolId)?.name || '-'; 
+                    document.getElementById('tf-name').innerText = t.name; 
+                    document.getElementById('tf-school').innerText = schoolName; 
+                    
+                    // Count Procedures
+                    const praise = System.data.procedures.filter(p => p.teacherId === tid && p.type === 'praise'); 
+                    const notes = System.data.procedures.filter(p => p.teacherId === tid && p.type === 'note'); 
+                    const verbal = System.data.procedures.filter(p => p.teacherId === tid && p.type === 'verbal_warning'); 
+                    const written = System.data.procedures.filter(p => p.teacherId === tid && p.type === 'written_warning'); 
+                    const violations = System.data.procedures.filter(p => p.teacherId === tid && p.type === 'violation'); 
+                    
+                    // Calc Gaps
+                    const gapsTable = document.querySelector('#table-gaps tbody'); gapsTable.innerHTML = ''; let gapVisitsCount = 0; const distinctVisits = []; System.data.evaluations.filter(e => e.teacherId === tid).forEach(e => { const key = `${e.weekId}_${e.classId}`; if(!distinctVisits.includes(key)) distinctVisits.push(key); }); distinctVisits.forEach(key => { const [wid, cid] = key.split('_'); const weekName = System.data.weeks.find(w => w.id == wid)?.name || '-'; const evals = System.data.evaluations.filter(e => e.teacherId === tid && e.weekId == wid && e.classId == cid); if(evals.length > 0) { const date = evals[0].date; let className = ''; System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => { if(c.id === cid) className = `${c.name}`; })))); const assign = System.data.assignments.find(a => a.teacherId === tid && a.classId === cid); const subName = assign ? System.utils.getSubjectName(assign.subjectId) : '-'; const presentIds = evals.map(e => e.criteriaId); const missingCriteria = System.data.criteria.filter(c => !presentIds.includes(c.id)); const missingNames = missingCriteria.map(c => c.name); const missingCount = missingCriteria.length; if(missingCount > 0) { gapVisitsCount++; const performance = Math.round((presentIds.length / System.data.criteria.length) * 100); gapsTable.innerHTML += `<tr><td>${className}</td><td>${weekName}</td><td>${subName}</td><td>${date}</td><td class="text-danger fw-bold text-center">${missingCount}</td><td class="small text-muted">${missingNames.join(' ، ')}</td><td><span class="badge bg-${performance < 50 ? 'danger' : 'warning'}">${performance}%</span></td></tr>`; } } }); 
+                    
+                    // Update Counters
+                    document.getElementById('tf-praise-count').innerText = praise.length; 
+                    document.getElementById('tf-note-count').innerText = notes.length; 
+                    document.getElementById('tf-verbal-count').innerText = verbal.length; 
+                    document.getElementById('tf-written-count').innerText = written.length; 
+                    document.getElementById('tf-violation-count').innerText = violations.length; 
+                    document.getElementById('tf-gaps-count').innerText = gapVisitsCount;
+
+                    // Fill Tables
+                    this.fillProcTable('table-praise', praise, t.mobile, t.id);
+                    this.fillProcTable('table-notes', notes, t.mobile, t.id);
+                    this.fillProcTable('table-verbal', verbal, t.mobile, t.id);
+                    this.fillProcTable('table-written', written, t.mobile, t.id);
+                    this.fillProcTable('table-violations', violations, t.mobile, t.id);
+                },
+                fillProcTable: function(tableId, data, mobile, teacherId) {
+                    const tbody = document.querySelector(`#${tableId} tbody`);
+                    tbody.innerHTML = '';
+                    const isAdmin = System.currentUser.role === 'admin';
+                    data.forEach(p => {
+                        let tools = `<i class="fab fa-whatsapp text-success cursor-pointer fa-lg" onclick="System.utils.sendWhatsapp('${mobile}', '${teacherId}', 'بخصوص: ${p.situation} - ${p.action}', '')"></i>`;
+                        if(isAdmin) {
+                            tools += ` <i class="fas fa-edit text-warning cursor-pointer ms-2" onclick="System.procedures.edit(${p.id})"></i>`;
+                            tools += ` <i class="fas fa-trash text-danger cursor-pointer ms-2" onclick="System.procedures.delete(${p.id})"></i>`;
+                        }
+                        tbody.innerHTML += `<tr><td>${p.date}</td><td>${p.situation}</td><td>${p.action}</td><td>${tools}</td></tr>`;
+                    });
+                }
             },
 
             reports: { 
                 init: function() { const wSel = document.getElementById('rep-week'); wSel.innerHTML = '<option value="all">كل الأسابيع</option>'; System.data.weeks.forEach(w => wSel.innerHTML += `<option value="${w.id}">${w.name}</option>`); this.generate(); }, 
-                generate: function() { const weekIdFilter = document.getElementById('rep-week').value; const isCoord = System.currentUser.role === 'coordinator'; const userSchoolId = System.currentUser.schoolId; const allowedGrades = System.currentUser.scope?.gradeIds || []; let filteredEvals = System.data.evaluations.filter(e => { const teacher = System.data.users.find(u => u.id === e.teacherId); if(!teacher) return false; if(isCoord) { if(teacher.schoolId !== userSchoolId) return false; const gid = System.dashboard.getGradeId(e.classId); if(!allowedGrades.includes(gid)) return false; } if(weekIdFilter !== 'all' && e.weekId != weekIdFilter) return false; return true; }); const criteriaStats = {}; System.data.criteria.forEach(c => criteriaStats[c.name] = 0); filteredEvals.forEach(e => { const cName = System.data.criteria.find(c => c.id === e.criteriaId)?.name; if(cName) criteriaStats[cName]++; }); this.renderPieChart(criteriaStats); this.renderBarChart(filteredEvals); this.renderPerformanceTable(filteredEvals); this.renderDetailedTable(filteredEvals); },
+                generate: function() { 
+                    const weekIdFilter = document.getElementById('rep-week').value; 
+                    const isCoord = System.currentUser.role === 'coordinator'; 
+                    const userSchoolId = System.currentUser.schoolId; 
+                    const allowedGrades = System.currentUser.scope?.gradeIds || []; 
+                    
+                    let filteredEvals = System.data.evaluations.filter(e => { 
+                        const teacher = System.data.users.find(u => u.id === e.teacherId); 
+                        if(!teacher) return false; 
+                        if(isCoord) { 
+                            if(teacher.schoolId !== userSchoolId) return false; 
+                            const gid = System.dashboard.getGradeId(e.classId); 
+                            if(!allowedGrades.includes(gid)) return false; 
+                        } 
+                        if(weekIdFilter !== 'all' && e.weekId != weekIdFilter) return false; 
+                        return true; 
+                    }); 
+                    
+                    const criteriaStats = {}; System.data.criteria.forEach(c => criteriaStats[c.name] = 0); 
+                    filteredEvals.forEach(e => { const cName = System.data.criteria.find(c => c.id === e.criteriaId)?.name; if(cName) criteriaStats[cName]++; }); 
+                    
+                    this.renderPieChart(criteriaStats); 
+                    this.renderBarChart(filteredEvals); 
+                    this.renderCoordinatorChart(filteredEvals);
+                    this.renderPerformanceTable(filteredEvals); 
+                    this.renderDetailedTable(filteredEvals); 
+                },
                 renderPieChart: function(data) { const ctx = document.getElementById('chart-pie').getContext('2d'); if(System.charts.pie) System.charts.pie.destroy(); System.charts.pie = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545'] }] } }); },
-                renderBarChart: function(evals) { const scores = {}; evals.forEach(e => { if(!scores[e.teacherId]) scores[e.teacherId] = 0; scores[e.teacherId]++; }); const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]).slice(0, 5); const labels = sorted.map(i => System.data.users.find(u => u.id == i[0])?.name); const values = sorted.map(i => i[1]); const ctx = document.getElementById('chart-bar').getContext('2d'); if(System.charts.bar) System.charts.bar.destroy(); System.charts.bar = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'نقاط التفعيل', data: values, backgroundColor: '#0d6efd' }] } }); },
+                renderBarChart: function(evals) { 
+                    const scores = {}; evals.forEach(e => { if(!scores[e.teacherId]) scores[e.teacherId] = 0; scores[e.teacherId]++; }); 
+                    const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]).slice(0, 5); 
+                    const labels = sorted.map(i => System.data.users.find(u => u.id == i[0])?.name); 
+                    const values = sorted.map(i => i[1]); 
+                    const ctx = document.getElementById('chart-bar').getContext('2d'); 
+                    if(System.charts.bar) System.charts.bar.destroy(); 
+                    System.charts.bar = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'نقاط التفعيل', data: values, backgroundColor: '#0d6efd' }] } }); 
+                },
+                renderCoordinatorChart: function(evals) {
+                    // Logic: Find grade of each evaluation, then find coordinator responsible for that grade.
+                    const coordScores = {};
+                    evals.forEach(e => {
+                        const gradeId = System.dashboard.getGradeId(e.classId);
+                        // Find coordinator with this grade in scope
+                        const coord = System.data.users.find(u => u.role === 'coordinator' && u.scope?.gradeIds?.includes(gradeId));
+                        if(coord) {
+                            if(!coordScores[coord.id]) coordScores[coord.id] = 0;
+                            coordScores[coord.id]++;
+                        }
+                    });
+                    const sorted = Object.entries(coordScores).sort((a,b) => b[1] - a[1]).slice(0, 5);
+                    const labels = sorted.map(i => System.data.users.find(u => u.id == i[0])?.name);
+                    const values = sorted.map(i => i[1]);
+                    const ctx = document.getElementById('chart-coordinator').getContext('2d');
+                    if(System.charts.coord) System.charts.coord.destroy();
+                    System.charts.coord = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'متابعات المنسقين', data: values, backgroundColor: '#198754' }] } });
+                },
                 renderPerformanceTable: function(evals) { const tbody = document.querySelector('#report-table tbody'); tbody.innerHTML = ''; const teacherStats = {}; evals.forEach(e => { if(!teacherStats[e.teacherId]) teacherStats[e.teacherId] = { count: 0, classes: new Set() }; teacherStats[e.teacherId].count++; teacherStats[e.teacherId].classes.add(e.classId + '_' + e.weekId); }); Object.keys(teacherStats).forEach(tid => { const t = System.data.users.find(u => u.id == tid); if(t) { const sub = System.data.subjects.find(s => s.id === t.subjectId)?.name || '-'; const totalCriteriaPossibility = teacherStats[tid].classes.size * System.data.criteria.length; const percent = totalCriteriaPossibility > 0 ? Math.round((teacherStats[tid].count / totalCriteriaPossibility) * 100) : 0; tbody.innerHTML += `<tr><td>${t.name}</td><td>${sub}</td><td>${teacherStats[tid].classes.size}</td><td>${teacherStats[tid].count}</td><td>${percent}%</td></tr>`; } }); },
                 renderDetailedTable: function(evals) { const tbody = document.querySelector('#detailed-data-table tbody'); tbody.innerHTML = ''; const visits = {}; evals.forEach(e => { const key = `${e.weekId}_${e.classId}_${e.teacherId}`; if(!visits[key]) { visits[key] = { date: e.date, teacherId: e.teacherId, classId: e.classId, weekId: e.weekId, criteriaIds: [] }; } visits[key].criteriaIds.push(e.criteriaId); }); Object.values(visits).forEach(v => { const t = System.data.users.find(u => u.id == v.teacherId)?.name; let className = ''; System.data.schools.forEach(s => s.stages.forEach(st => s.grades?.forEach(g => g.classes?.forEach(c => { if(c.id === v.classId) className = c.name; })))); const assign = System.data.assignments.find(a => a.teacherId == v.teacherId && a.classId == v.classId); const subName = assign ? System.utils.getSubjectName(assign.subjectId) : '-'; const activeNames = v.criteriaIds.map(cid => System.data.criteria.find(c => c.id === cid)?.name).filter(Boolean).join('، '); const allCriteriaIds = System.data.criteria.map(c => c.id); const missingIds = allCriteriaIds.filter(id => !v.criteriaIds.includes(id)); const missingNames = missingIds.map(id => System.data.criteria.find(c => c.id === id)?.name).filter(Boolean).join('، '); tbody.innerHTML += `<tr><td>${v.date}</td><td>${t}</td><td>${subName}</td><td>${className}</td><td class="text-success small">${activeNames}</td><td class="text-danger small">${missingNames}</td></tr>`; }); }
             }
         };
 
-        // Make System Global for HTML onClick handlers
+        // Make System Global
         window.System = System;
         
         // Start
