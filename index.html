@@ -310,9 +310,25 @@
 
         <div id="view-notifications" class="view-section hidden">
             <h3 class="mb-4 text-primary">الإشعارات</h3>
+            
+            <div class="section-card py-3 bg-light no-print">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="small fw-bold mb-1">تصفية بالمرحلة:</label>
+                        <select id="notif-filter-stage" class="form-select" onchange="System.notifications.render()">
+                            <option value="">كل المراحل</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="small fw-bold mb-1">بحث باسم المعلم:</label>
+                        <input type="text" id="notif-filter-name" class="form-control" placeholder="اكتب اسم المعلم..." onkeyup="System.notifications.render()">
+                    </div>
+                </div>
+            </div>
+
             <div class="d-flex justify-content-end mb-3 no-print"><button class="btn btn-secondary" onclick="System.utils.printAllNotifications()">طباعة الكل</button></div>
             <div class="row">
-                <div class="col-md-4"><div class="card bg-primary text-white mb-3"><div class="card-body text-center"><h1 class="display-4 fw-bold" id="notif-count-display">0</h1><p>الإشعارات المرسلة</p></div></div></div>
+                <div class="col-md-4"><div class="card bg-primary text-white mb-3"><div class="card-body text-center"><h1 class="display-4 fw-bold" id="notif-count-display">0</h1><p>الإشعارات المعروضة</p></div></div></div>
                 <div class="col-md-8"><div class="section-card"><h5 class="mb-3">سجل التواصل</h5><ul class="list-group" id="notif-list"></ul></div></div>
             </div>
         </div>
@@ -555,7 +571,7 @@
                     if(viewId === 'view-coordinator-entry') System.coordinator.init();
                     if(viewId === 'view-dashboard') System.dashboard.init();
                     if(viewId === 'view-reports') System.reports.init();
-                    if(viewId === 'view-notifications') System.notifications.render();
+                    if(viewId === 'view-notifications') System.notifications.init();
                     if(viewId === 'view-procedures') System.procedures.init();
                     if(viewId === 'view-teacher-file') System.teacherFile.init();
                 },
@@ -779,7 +795,70 @@
                 getSubjectName: function(id) { return System.data.subjects.find(s=>s.id == id)?.name || ''; }
             },
 
-            notifications: { render: function() { const list = document.getElementById('notif-list'); list.innerHTML = ''; [...System.data.notifications].reverse().forEach(n => { const t = System.data.users.find(u => u.id === n.teacherId)?.name || 'غير معروف'; const fullMessage = n.details + (n.missing ? `<br><span class="text-danger small"><strong>النواقص:</strong> ${n.missing}</span>` : ''); list.innerHTML += `<li class="list-group-item d-block"><div class="d-flex justify-content-between"><strong>${t}</strong><small class="text-muted">${n.date}</small></div><div class="mt-2" style="white-space: pre-wrap;">${fullMessage}</div></li>`; }); } },
+            notifications: {
+                init: function() {
+                    // Populate Stage Dropdown
+                    const sel = document.getElementById('notif-filter-stage');
+                    if(!sel) return;
+                    sel.innerHTML = '<option value="">كل المراحل</option>';
+                    
+                    const user = System.currentUser;
+                    if(user.role === 'admin') {
+                         System.data.schools.forEach(s => s.stages.forEach(st => sel.innerHTML += `<option value="${st.id}">${s.name} - ${st.name}</option>`));
+                    } else {
+                         const school = System.data.schools.find(s => s.id === user.schoolId);
+                         if(school && school.stages) school.stages.forEach(st => sel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
+                    }
+                    this.render();
+                },
+                render: function() { 
+                    const list = document.getElementById('notif-list'); 
+                    list.innerHTML = ''; 
+                    
+                    const filterName = document.getElementById('notif-filter-name').value.toLowerCase();
+                    const filterStage = document.getElementById('notif-filter-stage').value;
+
+                    // Filter Logic
+                    let filtered = [...System.data.notifications].reverse().filter(n => {
+                        const t = System.data.users.find(u => u.id === n.teacherId);
+                        if(!t) return false;
+
+                        // Name Filter
+                        if(filterName && !t.name.toLowerCase().includes(filterName)) return false;
+
+                        // Stage Filter (Complex lookup via assignments)
+                        if(filterStage) {
+                            let stageFound = false;
+                            const teacherAssigns = System.data.assignments.filter(a => a.teacherId === t.id);
+                            for(let a of teacherAssigns) {
+                                 let clsStageId = null;
+                                 System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                                     if(c.id === a.classId) clsStageId = st.id;
+                                 }))));
+                                 if(clsStageId === filterStage) {
+                                     stageFound = true;
+                                     break;
+                                 }
+                            }
+                            if(!stageFound) return false;
+                        }
+                        return true;
+                    });
+                    
+                    document.getElementById('notif-count-display').innerText = filtered.length;
+
+                    if(filtered.length === 0) {
+                        list.innerHTML = '<li class="list-group-item text-center text-muted">لا توجد نتائج مطابقة للبحث</li>';
+                        return;
+                    }
+
+                    filtered.forEach(n => { 
+                        const t = System.data.users.find(u => u.id === n.teacherId)?.name || 'غير معروف'; 
+                        const fullMessage = n.details + (n.missing ? `<br><span class="text-danger small"><strong>النواقص:</strong> ${n.missing}</span>` : ''); 
+                        list.innerHTML += `<li class="list-group-item d-block"><div class="d-flex justify-content-between"><strong>${t}</strong><small class="text-muted">${n.date}</small></div><div class="mt-2" style="white-space: pre-wrap;">${fullMessage}</div></li>`; 
+                    }); 
+                } 
+            },
             
             procedures: { 
                 init: function() { const tSel = document.getElementById('proc-teacher'); tSel.innerHTML = ''; System.data.users.filter(u => u.role === 'teacher').forEach(t => tSel.innerHTML += `<option value="${t.id}">${t.name}</option>`); this.renderList(); }, 
