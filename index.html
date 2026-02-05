@@ -291,10 +291,12 @@
             <div class="section-card bg-white border-top border-4 border-info">
                 <div class="d-flex align-items-center mb-3 text-info"><i class="fas fa-chart-pie fa-2x me-2"></i><h5 class="m-0 fw-bold">نسبة تفعيل البنود</h5></div>
                 <div class="row g-2 mb-3 bg-light p-3 rounded align-items-end">
-                    <div class="col-md-3"><label class="small fw-bold">المدرسة</label><select id="stats-school" class="form-select form-select-sm" onchange="System.dashboard.updateStatsFilters('school')"><option value="all">الجميع</option></select></div>
-                    <div class="col-md-3"><label class="small fw-bold">الصف</label><select id="stats-grade" class="form-select form-select-sm" onchange="System.dashboard.updateStatsFilters('grade')"><option value="all">الجميع</option></select></div>
-                    <div class="col-md-3"><label class="small fw-bold">الفصل</label><select id="stats-class" class="form-select form-select-sm"><option value="all">الجميع</option></select></div>
-                    <div class="col-md-3"><button class="btn btn-info text-white btn-sm w-100" onclick="System.dashboard.renderCriteriaStats()">عرض النسب</button></div>
+                    <div class="col-md-2"><label class="small fw-bold">الأسبوع</label><select id="stats-week" class="form-select form-select-sm"><option value="all">الجميع</option></select></div>
+                    <div class="col-md-2"><label class="small fw-bold">المدرسة</label><select id="stats-school" class="form-select form-select-sm" onchange="System.dashboard.updateStatsFilters('school')"><option value="all">الجميع</option></select></div>
+                    <div class="col-md-2"><label class="small fw-bold">المرحلة</label><select id="stats-stage" class="form-select form-select-sm" onchange="System.dashboard.updateStatsFilters('stage')"><option value="all">الجميع</option></select></div>
+                    <div class="col-md-2"><label class="small fw-bold">الصف</label><select id="stats-grade" class="form-select form-select-sm" onchange="System.dashboard.updateStatsFilters('grade')"><option value="all">الجميع</option></select></div>
+                    <div class="col-md-2"><label class="small fw-bold">الفصل</label><select id="stats-class" class="form-select form-select-sm"><option value="all">الجميع</option></select></div>
+                    <div class="col-md-2"><button class="btn btn-info text-white btn-sm w-100" onclick="System.dashboard.renderCriteriaStats()">عرض النسب</button></div>
                 </div>
                 <div class="table-responsive"><table class="table table-bordered table-sm text-center align-middle" id="criteria-stats-table"><thead class="table-secondary"><tr><th>البند</th><th>التفعيل</th><th>الزيارات</th><th>النسبة %</th></tr></thead><tbody></tbody></table></div>
             </div>
@@ -318,10 +320,11 @@
             <div class="section-card border-top border-4 border-danger">
                  <h5 class="mb-3 border-bottom pb-2">فلترة بيانات النقص</h5>
                 <div class="row g-2 mb-3 no-print align-items-end">
-                    <div class="col-md-2"><label class="small">الأسبوع</label><select id="gaps-week" class="form-select"><option value="">الجميع</option></select></div>
+                    <div class="col-md-2"><label class="small">المرحلة</label><select id="gaps-stage" class="form-select" onchange="System.gaps.updateGrades()"></select></div>
                     <div class="col-md-2"><label class="small">الصف</label><select id="gaps-grade" class="form-select"><option value="">الجميع</option></select></div>
                     <div class="col-md-2"><label class="small">الفصل</label><select id="gaps-class" class="form-select"><option value="">الجميع</option></select></div>
-                    <div class="col-md-4"><label class="small">اسم المعلم</label><input type="text" id="gaps-search-name" class="form-control" placeholder="ابحث بالاسم..."></div>
+                    <div class="col-md-2"><label class="small">الأسبوع</label><select id="gaps-week" class="form-select"><option value="">الجميع</option></select></div>
+                    <div class="col-md-2"><label class="small">اسم المعلم</label><input type="text" id="gaps-search-name" class="form-control" placeholder="ابحث بالاسم..."></div>
                     <div class="col-md-2"><button class="btn btn-danger w-100" onclick="System.gaps.render()">بحث</button></div>
                 </div>
                 <div class="table-responsive">
@@ -706,7 +709,13 @@
             dashboard: {
                 init: function() { 
                     const wSel = document.getElementById('dash-week'); wSel.innerHTML = ''; 
-                    System.data.weeks.forEach(w => wSel.innerHTML += `<option value="${w.id}">${w.name}</option>`); 
+                    const wStatsSel = document.getElementById('stats-week'); 
+                    if(wStatsSel) wStatsSel.innerHTML = '<option value="all">الجميع</option>';
+
+                    System.data.weeks.forEach(w => {
+                        wSel.innerHTML += `<option value="${w.id}">${w.name}</option>`;
+                        if(wStatsSel) wStatsSel.innerHTML += `<option value="${w.id}">${w.name}</option>`;
+                    }); 
                     this.initDashFilters();
                     this.renderStats(); 
                     this.renderMonitoringStatus(); 
@@ -820,38 +829,149 @@
                     document.getElementById('missing-items-notes').innerText = notes ? notes : "لا توجد ملاحظات";
                     new bootstrap.Modal(document.getElementById('missingItemsModal')).show(); 
                 },
-                updateStatsFilters: function(level) { const schoolSel = document.getElementById('stats-school'); const gradeSel = document.getElementById('stats-grade'); const classSel = document.getElementById('stats-class'); if (level === 'all') { schoolSel.innerHTML = '<option value="all">الجميع</option>'; System.data.schools.forEach(s => schoolSel.innerHTML += `<option value="${s.id}">${s.name}</option>`); } if (level === 'school' || level === 'all') { gradeSel.innerHTML = '<option value="all">الجميع</option>'; const sid = schoolSel.value; if (sid !== 'all') { System.data.schools.find(s => s.id == sid)?.stages.forEach(st => st.grades.forEach(g => gradeSel.innerHTML += `<option value="${g.id}">${g.name}</option>`)); } } if (level === 'grade' || level === 'all') { classSel.innerHTML = '<option value="all">الجميع</option>'; const sid = schoolSel.value; const gid = gradeSel.value; if (sid !== 'all' && gid !== 'all') { let targetGrade = null; System.data.schools.find(s=>s.id == sid)?.stages.forEach(st => { const found = st.grades.find(g => g.id == gid); if(found) targetGrade = found; }); if (targetGrade) targetGrade.classes.forEach(c => classSel.innerHTML += `<option value="${c.id}">${c.name}</option>`); } } },
-                renderCriteriaStats: function() { const schoolId = document.getElementById('stats-school').value; const gradeId = document.getElementById('stats-grade').value; const classId = document.getElementById('stats-class').value; const isCoord = System.currentUser.role === 'coordinator'; const userSchoolId = System.currentUser.schoolId; const allowedGrades = System.currentUser.scope?.gradeIds || []; let filteredAssignments = System.data.assignments.filter(a => { const teacher = System.data.users.find(u => u.id === a.teacherId); if (!teacher) return false; if(isCoord) { if(teacher.schoolId !== userSchoolId) return false; const actualGradeId = System.dashboard.getGradeId(a.classId); if(!allowedGrades.includes(actualGradeId)) return false; } if (schoolId !== 'all' && teacher.schoolId != schoolId) return false; let foundGid = null; System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => { if (g.classes.find(c => c.id === a.classId)) foundGid = g.id; }))); if (gradeId !== 'all' && foundGid != gradeId) return false; if (classId !== 'all' && a.classId != classId) return false; return true; }); const relevantEvals = System.data.evaluations.filter(e => filteredAssignments.find(a => a.teacherId === e.teacherId && a.classId === e.classId)); const uniqueVisits = new Set(relevantEvals.map(e => `${e.weekId}_${e.classId}_${e.teacherId}`)).size; const tbody = document.querySelector('#criteria-stats-table tbody'); tbody.innerHTML = ''; if (uniqueVisits === 0) { tbody.innerHTML = '<tr><td colspan="4">لا توجد بيانات</td></tr>'; return; } System.data.criteria.forEach(crit => { const actualCount = relevantEvals.filter(e => e.criteriaId === crit.id).length; const percent = Math.round((actualCount / uniqueVisits) * 100); let color = percent < 50 ? 'danger' : (percent < 80 ? 'warning' : 'success'); tbody.innerHTML += `<tr><td>${crit.name}</td><td>${actualCount}</td><td>${uniqueVisits}</td><td><div class="progress position-relative" style="height: 25px;"><div class="progress-bar bg-${color}" role="progressbar" style="width: ${percent}%"></div><span class="position-absolute w-100 text-center text-dark fw-bold" style="top: 2px;">${percent}%</span></div></td></tr>`; }); }
+                updateStatsFilters: function(level) {
+                    const schoolSel = document.getElementById('stats-school');
+                    const stageSel = document.getElementById('stats-stage');
+                    const gradeSel = document.getElementById('stats-grade');
+                    const classSel = document.getElementById('stats-class');
+
+                    if (level === 'all') {
+                        schoolSel.innerHTML = '<option value="all">الجميع</option>';
+                        System.data.schools.forEach(s => schoolSel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
+                    }
+
+                    // Update Stages
+                    if (level === 'school' || level === 'all') {
+                        stageSel.innerHTML = '<option value="all">الجميع</option>';
+                        const sid = schoolSel.value;
+                        if (sid !== 'all') {
+                            const school = System.data.schools.find(s => s.id == sid);
+                            if(school && school.stages) school.stages.forEach(st => stageSel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
+                        } else {
+                            System.data.schools.forEach(s => s.stages.forEach(st => stageSel.innerHTML += `<option value="${st.id}">${s.name} - ${st.name}</option>`));
+                        }
+                    }
+
+                    // Update Grades
+                    if (level === 'stage' || level === 'school' || level === 'all') {
+                        gradeSel.innerHTML = '<option value="all">الجميع</option>';
+                        const sid = schoolSel.value;
+                        const stid = stageSel.value;
+                        
+                        System.data.schools.forEach(s => {
+                            if (sid !== 'all' && s.id != sid) return;
+                            s.stages.forEach(st => {
+                                if (stid !== 'all' && st.id != stid) return;
+                                st.grades.forEach(g => {
+                                     gradeSel.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+                                });
+                            });
+                        });
+                    }
+
+                    // Update Classes
+                    if (level === 'grade' || level === 'stage' || level === 'school' || level === 'all') {
+                        classSel.innerHTML = '<option value="all">الجميع</option>';
+                        const gid = gradeSel.value;
+                        const sid = schoolSel.value; 
+                        const stid = stageSel.value;
+
+                        System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => {
+                            if (gid !== 'all' && g.id != gid) return;
+                            if (sid !== 'all' && s.id != sid) return;
+                            if (stid !== 'all' && st.id != stid) return;
+
+                            g.classes.forEach(c => classSel.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+                        })));
+                    }
+                },
+                renderCriteriaStats: function() { 
+                    const weekId = document.getElementById('stats-week').value;
+                    const schoolId = document.getElementById('stats-school').value; 
+                    const stageId = document.getElementById('stats-stage').value;
+                    const gradeId = document.getElementById('stats-grade').value; 
+                    const classId = document.getElementById('stats-class').value; 
+                    
+                    const isCoord = System.currentUser.role === 'coordinator'; 
+                    const userSchoolId = System.currentUser.schoolId; 
+                    const allowedGrades = System.currentUser.scope?.gradeIds || []; 
+                    
+                    let filteredAssignments = System.data.assignments.filter(a => { 
+                        const teacher = System.data.users.find(u => u.id === a.teacherId); 
+                        if (!teacher) return false; 
+                        if(isCoord) { 
+                            if(teacher.schoolId !== userSchoolId) return false; 
+                            const actualGradeId = System.dashboard.getGradeId(a.classId); 
+                            if(!allowedGrades.includes(actualGradeId)) return false; 
+                        } 
+                        if (schoolId !== 'all' && teacher.schoolId != schoolId) return false; 
+                        
+                        let foundGid = null; 
+                        let foundStageId = null;
+
+                        System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => { 
+                            if (g.classes.find(c => c.id === a.classId)) {
+                                foundGid = g.id; 
+                                foundStageId = st.id;
+                            }
+                        }))); 
+                        
+                        if (stageId !== 'all' && foundStageId != stageId) return false;
+                        if (gradeId !== 'all' && foundGid != gradeId) return false; 
+                        if (classId !== 'all' && a.classId != classId) return false; 
+                        
+                        return true; 
+                    }); 
+                    
+                    const relevantEvals = System.data.evaluations.filter(e => {
+                        // Week Filter Logic
+                        if(weekId !== 'all' && e.weekId != weekId) return false;
+                        
+                        return filteredAssignments.find(a => a.teacherId === e.teacherId && a.classId === e.classId);
+                    }); 
+                    
+                    const uniqueVisits = new Set(relevantEvals.map(e => `${e.weekId}_${e.classId}_${e.teacherId}`)).size; 
+                    const tbody = document.querySelector('#criteria-stats-table tbody'); 
+                    tbody.innerHTML = ''; 
+                    
+                    if (uniqueVisits === 0) { 
+                        tbody.innerHTML = '<tr><td colspan="4">لا توجد بيانات</td></tr>'; 
+                        return; 
+                    } 
+                    
+                    System.data.criteria.forEach(crit => { 
+                        const actualCount = relevantEvals.filter(e => e.criteriaId === crit.id).length; 
+                        const percent = Math.round((actualCount / uniqueVisits) * 100); 
+                        let color = percent < 50 ? 'danger' : (percent < 80 ? 'warning' : 'success'); 
+                        tbody.innerHTML += `<tr><td>${crit.name}</td><td>${actualCount}</td><td>${uniqueVisits}</td><td><div class="progress position-relative" style="height: 25px;"><div class="progress-bar bg-${color}" role="progressbar" style="width: ${percent}%"></div><span class="position-absolute w-100 text-center text-dark fw-bold" style="top: 2px;">${percent}%</span></div></td></tr>`; 
+                    }); 
+                }
             },
 
             gaps: {
                 init: function() {
                     const wSel = document.getElementById('gaps-week');
+                    const sSel = document.getElementById('gaps-stage');
                     const gSel = document.getElementById('gaps-grade');
                     const cSel = document.getElementById('gaps-class');
                     
                     wSel.innerHTML = '<option value="">الجميع</option>';
                     System.data.weeks.forEach(w => wSel.innerHTML += `<option value="${w.id}">${w.name}</option>`);
 
-                    // Populate Grades (All for Admin, Scoped for others)
-                    gSel.innerHTML = '<option value="">الجميع</option>';
+                    // Populate Stages
+                    sSel.innerHTML = '<option value="">الجميع</option>';
                     const user = System.currentUser;
-                    const schoolId = user.schoolId;
-                    
                     if(user.role === 'admin') {
-                        System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => gSel.innerHTML += `<option value="${g.id}">${s.name} - ${g.name}</option>`)));
-                    } else if (schoolId) {
-                         const school = System.data.schools.find(s => s.id === schoolId);
-                         if(school) {
-                             school.stages.forEach(st => st.grades.forEach(g => {
-                                 // Check scope if coordinator
-                                 if(user.role === 'coordinator' && !user.scope?.gradeIds?.includes(g.id)) return;
-                                 gSel.innerHTML += `<option value="${g.id}">${g.name}</option>`;
-                             }));
-                         }
+                        System.data.schools.forEach(s => s.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${s.name} - ${st.name}</option>`));
+                    } else if (user.schoolId) {
+                        const school = System.data.schools.find(s => s.id === user.schoolId);
+                        if(school) school.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
                     }
 
-                    // Populate Classes on Grade change
+                    // Populate Grades (Initial - based on selected stage or all)
+                    // We'll use updateGrades to handle the initial logic properly
+                    
+                    // Add Listener for Grade Change to update Class
                     gSel.addEventListener('change', () => {
                          const gid = gSel.value;
                          cSel.innerHTML = '<option value="">الجميع</option>';
@@ -862,13 +982,39 @@
                          }
                     });
 
+                    this.updateGrades(); // Populate grades initially
                     this.render();
+                },
+                updateGrades: function() {
+                    const sSel = document.getElementById('gaps-stage');
+                    const gSel = document.getElementById('gaps-grade');
+                    const cSel = document.getElementById('gaps-class');
+                    const stageId = sSel.value;
+                    const user = System.currentUser;
+
+                    gSel.innerHTML = '<option value="">الجميع</option>';
+                    cSel.innerHTML = '<option value="">الجميع</option>'; // Reset class as well
+
+                    System.data.schools.forEach(s => s.stages.forEach(st => {
+                        // Filter by school permission
+                        if(user.role !== 'admin' && s.id !== user.schoolId) return;
+                        
+                        // Filter by selected stage
+                        if(stageId && st.id != stageId) return;
+
+                        st.grades.forEach(g => {
+                            // Filter by coordinator scope
+                            if(user.role === 'coordinator' && !user.scope?.gradeIds?.includes(g.id)) return;
+                            gSel.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+                        });
+                    }));
                 },
                 render: function() {
                     const tbody = document.querySelector('#gaps-table tbody');
                     tbody.innerHTML = '';
                     
                     const weekFilter = document.getElementById('gaps-week').value;
+                    const stageFilter = document.getElementById('gaps-stage').value;
                     const gradeFilter = document.getElementById('gaps-grade').value;
                     const classFilter = document.getElementById('gaps-class').value;
                     const nameFilter = document.getElementById('gaps-search-name').value.toLowerCase();
@@ -891,6 +1037,15 @@
                          if(classFilter && assign.classId != classFilter) return;
                          // Grade Filter (Indirect)
                          if(gradeFilter && System.dashboard.getGradeId(assign.classId) != gradeFilter) return;
+
+                         // Stage Filter (Indirect)
+                         if(stageFilter) {
+                             let currentStageId = null;
+                             System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                                 if(c.id === assign.classId) currentStageId = st.id;
+                             }))));
+                             if(currentStageId != stageFilter) return;
+                         }
 
                          // Iterate through relevant weeks (if filter set, only that week, else all weeks with data)
                          const relevantWeeks = weekFilter ? [parseInt(weekFilter)] : System.data.weeks.map(w => w.id);
