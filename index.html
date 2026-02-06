@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام متابعة المعلمين - النسخة المتكاملة</title>
+    <title>نظام متابعة المعلمين - النسخة المحدثة</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -288,6 +288,25 @@
         <div id="view-dashboard" class="view-section hidden">
             <h3 class="mb-4 text-primary">حالة الرصد</h3>
             <div class="row mb-4" id="general-stats-row"></div>
+
+            <!-- زر المقارنات الأسبوعية -->
+            <div class="text-center mb-3">
+                <button class="btn btn-outline-primary btn-lg fw-bold w-100" onclick="System.dashboard.toggleWeeklyComparison()">
+                    <i class="fas fa-chart-line me-2"></i> المقارنات الأسبوعية
+                </button>
+            </div>
+
+            <!-- قسم المقارنات الأسبوعية -->
+            <div id="weekly-comparison-section" class="section-card hidden border-top border-4 border-warning">
+                <h5 class="mb-3 text-warning"><i class="fas fa-calendar-alt me-2"></i>نواقص المعلمين (أسبوعياً)</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover text-center" id="weekly-comparison-table">
+                        <thead class="table-warning"></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="section-card bg-white border-top border-4 border-info">
                 <div class="d-flex align-items-center mb-3 text-info"><i class="fas fa-chart-pie fa-2x me-2"></i><h5 class="m-0 fw-bold">نسبة تفعيل البنود</h5></div>
                 <div class="row g-2 mb-3 bg-light p-3 rounded align-items-end">
@@ -429,6 +448,9 @@
                     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#stats" type="button">إحصائيات</button></li>
                     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#perf" type="button">الأداء</button></li>
                     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#data" type="button">بيانات</button></li>
+                    <!-- New Tabs -->
+                    <li class="nav-item"><button class="nav-link fw-bold text-success" data-bs-toggle="tab" data-bs-target="#tab-stages-rank" type="button">ترتيب المراحل</button></li>
+                    <li class="nav-item"><button class="nav-link fw-bold text-primary" data-bs-toggle="tab" data-bs-target="#tab-teachers-rank" type="button">ترتيب المعلمين</button></li>
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="stats" role="tabpanel">
@@ -440,6 +462,39 @@
                     </div>
                     <div class="tab-pane fade" id="perf" role="tabpanel"><div class="table-responsive"><table class="table table-bordered table-striped" id="report-table"><thead class="table-light"><tr><th>المعلم</th><th>المادة</th><th>الحصص</th><th>البنود المفعلة</th><th>الإنجاز %</th></tr></thead><tbody></tbody></table></div></div>
                     <div class="tab-pane fade" id="data" role="tabpanel"><div class="table-responsive"><table class="table table-bordered table-sm small" id="detailed-data-table"><thead class="table-dark"><tr><th>التاريخ</th><th>المعلم</th><th>المادة</th><th>الفصل</th><th>مفعل</th><th>غير مفعل</th></tr></thead><tbody></tbody></table></div></div>
+                    
+                    <!-- New Content: Stages Rank -->
+                    <div class="tab-pane fade" id="tab-stages-rank" role="tabpanel">
+                        <div class="alert alert-success">ترتيب المراحل حسب نسبة تفعيل البنود</div>
+                        <div class="row g-2 mb-3 bg-light p-2 rounded border">
+                            <div class="col-md-4"><label class="small fw-bold">الأسبوع:</label><select id="rank-stage-week" class="form-select form-select-sm"><option value="all">الجميع</option></select></div>
+                            <div class="col-md-2 d-flex align-items-end"><button class="btn btn-success btn-sm w-100" onclick="System.reports.renderStagesRank()">تحديث</button></div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover text-center" id="table-stages-rank">
+                                <thead class="table-success"><tr><th>الترتيب</th><th>المرحلة</th><th>إجمالي البنود المطلوبة</th><th>البنود المفعلة</th><th>نسبة الأداء %</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- New Content: Teachers Rank -->
+                    <div class="tab-pane fade" id="tab-teachers-rank" role="tabpanel">
+                        <div class="alert alert-primary">ترتيب المعلمين حسب الأداء</div>
+                        <div class="row g-2 mb-3 bg-light p-2 rounded border">
+                             <div class="col-md-3"><select id="rank-stage" class="form-select form-select-sm" onchange="System.reports.updateRankFilters('stage')"><option value="all">كل المراحل</option></select></div>
+                             <div class="col-md-3"><select id="rank-grade" class="form-select form-select-sm" onchange="System.reports.updateRankFilters('grade')"><option value="all">كل الصفوف</option></select></div>
+                             <div class="col-md-3"><select id="rank-class" class="form-select form-select-sm" onchange="System.reports.updateRankFilters('class')"><option value="all">كل الفصول</option></select></div>
+                             <div class="col-md-3"><select id="rank-week" class="form-select form-select-sm"><option value="all">كل الأسابيع</option></select></div>
+                             <div class="col-12"><button class="btn btn-primary btn-sm w-100 fw-bold" onclick="System.reports.renderTeachersRank()">تحديث الترتيب</button></div>
+                        </div>
+                         <div class="table-responsive">
+                            <table class="table table-bordered table-striped text-center" id="table-teachers-rank">
+                                <thead class="table-primary"><tr><th>#</th><th>المعلم</th><th>المادة</th><th>الفصول التي زارها</th><th>نسبة الأداء %</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -721,6 +776,73 @@
                     this.renderMonitoringStatus(); 
                     this.updateStatsFilters('all'); 
                 },
+                toggleWeeklyComparison: function() {
+                    const section = document.getElementById('weekly-comparison-section');
+                    section.classList.toggle('hidden');
+                    if(!section.classList.contains('hidden')) {
+                        this.renderWeeklyComparison();
+                    }
+                },
+                renderWeeklyComparison: function() {
+                    const table = document.getElementById('weekly-comparison-table');
+                    const thead = table.querySelector('thead');
+                    const tbody = table.querySelector('tbody');
+                    
+                    // Prepare Headers (Weeks)
+                    const weeks = [...System.data.weeks].sort((a,b) => a.id - b.id);
+                    let headerHtml = '<tr><th style="width:200px">المعلم</th>';
+                    weeks.forEach(w => headerHtml += `<th>${w.name}</th>`);
+                    headerHtml += '</tr>';
+                    thead.innerHTML = headerHtml;
+
+                    // Prepare Rows (Teachers)
+                    tbody.innerHTML = '';
+                    const teachers = System.data.users.filter(u => u.role === 'teacher');
+                    
+                    // Filter based on user role permission
+                    const currentUser = System.currentUser;
+                    const filteredTeachers = teachers.filter(t => {
+                        if (currentUser.role === 'admin') return true;
+                        if (currentUser.role === 'coordinator' && t.schoolId === currentUser.schoolId) return true; // simplified for comparison view
+                        if (t.schoolId === currentUser.schoolId) return true;
+                        return false;
+                    });
+
+                    filteredTeachers.forEach(t => {
+                        let rowHtml = `<tr><td class="fw-bold">${t.name}</td>`;
+                        
+                        weeks.forEach(w => {
+                            // Calculate Gaps for this teacher in this week
+                            // Logic: Look for all evaluations for this teacher in this week. 
+                            // If evaluations exist, count how many criteria are missing from total criteria.
+                            
+                            // Get unique visits (Class+Week) to avoid double counting if multiple visits to same class? 
+                            // Simplified: Get all unique class visits for this teacher in this week.
+                            const teacherEvals = System.data.evaluations.filter(e => e.teacherId === t.id && e.weekId === w.id);
+                            
+                            if(teacherEvals.length === 0) {
+                                rowHtml += `<td class="text-muted">-</td>`;
+                            } else {
+                                // Group by class to find gaps per visit
+                                const distinctClasses = [...new Set(teacherEvals.map(e => e.classId))];
+                                let totalGaps = 0;
+                                
+                                distinctClasses.forEach(cId => {
+                                    const classEvals = teacherEvals.filter(e => e.classId === cId);
+                                    const activeCount = classEvals.length;
+                                    const totalCriteria = System.data.criteria.length;
+                                    totalGaps += (totalCriteria - activeCount);
+                                });
+                                
+                                const colorClass = totalGaps > 0 ? 'text-danger fw-bold' : 'text-success';
+                                rowHtml += `<td class="${colorClass}">${totalGaps}</td>`;
+                            }
+                        });
+                        
+                        rowHtml += '</tr>';
+                        tbody.innerHTML += rowHtml;
+                    });
+                },
                 initDashFilters: function() {
                     // Populate Stage dropdown
                     const stageSel = document.getElementById('dash-stage');
@@ -968,9 +1090,6 @@
                         if(school) school.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
                     }
 
-                    // Populate Grades (Initial - based on selected stage or all)
-                    // We'll use updateGrades to handle the initial logic properly
-                    
                     // Add Listener for Grade Change to update Class
                     gSel.addEventListener('change', () => {
                          const gid = gSel.value;
@@ -1160,9 +1279,25 @@
                     filtered.forEach(n => { 
                         const t = System.data.users.find(u => u.id === n.teacherId)?.name || 'غير معروف'; 
                         const fullMessage = n.details + (n.missing ? `<br><span class="text-danger small"><strong>النواقص:</strong> ${n.missing}</span>` : ''); 
-                        list.innerHTML += `<li class="list-group-item d-block"><div class="d-flex justify-content-between"><strong>${t}</strong><small class="text-muted">${n.date}</small></div><div class="mt-2" style="white-space: pre-wrap;">${fullMessage}</div></li>`; 
+                        list.innerHTML += `<li class="list-group-item d-block">
+                            <div class="d-flex justify-content-between">
+                                <strong>${t}</strong>
+                                <div>
+                                    <small class="text-muted ms-2">${n.date}</small>
+                                    <i class="fas fa-trash text-danger cursor-pointer" title="حذف" onclick="System.notifications.delete(${n.id})"></i>
+                                </div>
+                            </div>
+                            <div class="mt-2" style="white-space: pre-wrap;">${fullMessage}</div>
+                        </li>`; 
                     }); 
-                } 
+                },
+                delete: function(id) {
+                    if(confirm('هل أنت متأكد من حذف هذا الإشعار؟')) {
+                        System.data.notifications = System.data.notifications.filter(n => n.id !== id);
+                        System.save();
+                        this.render();
+                    }
+                }
             },
             
             procedures: { 
@@ -1284,7 +1419,12 @@
                         if(school) school.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
                     }
 
+                    // Init Rank Filters
+                    this.updateRankFilters('init');
+
                     this.generate(); 
+                    this.renderStagesRank();
+                    this.renderTeachersRank();
                 }, 
                 generate: function() { 
                     const weekIdFilter = document.getElementById('rep-week').value; 
@@ -1328,6 +1468,157 @@
                     this.renderCoordinatorChart(filteredEvals);
                     this.renderPerformanceTable(filteredEvals); 
                     this.renderDetailedTable(filteredEvals); 
+                },
+                renderStagesRank: function() {
+                    const weekFilter = document.getElementById('rank-stage-week').value;
+
+                    // Logic to calculate performance per stage
+                    // 1. Group Evals by Stage
+                    // 2. Calculate Total Possible Items vs Active Items
+                    const stageStats = {}; // { stageId: { active: 0, totalVisits: 0 } }
+                    
+                    System.data.evaluations.forEach(e => {
+                         // Apply Week Filter
+                         if (weekFilter !== 'all' && e.weekId != weekFilter) return;
+
+                         let stageId = null;
+                         let stageName = '';
+                         System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                             if(c.id === e.classId) {
+                                 stageId = st.id;
+                                 stageName = st.name; // Simplified, could include school name
+                             }
+                         }))));
+                         
+                         if(stageId) {
+                             if(!stageStats[stageId]) stageStats[stageId] = { name: stageName, active: 0, visits: new Set() };
+                             stageStats[stageId].active++;
+                             stageStats[stageId].visits.add(e.weekId + '_' + e.classId + '_' + e.teacherId);
+                         }
+                    });
+
+                    const ranking = [];
+                    Object.keys(stageStats).forEach(sid => {
+                        const data = stageStats[sid];
+                        const totalCriteria = System.data.criteria.length;
+                        const totalPossible = data.visits.size * totalCriteria;
+                        const percentage = totalPossible > 0 ? (data.active / totalPossible) * 100 : 0;
+                        ranking.push({ name: data.name, active: data.active, total: totalPossible, pct: percentage });
+                    });
+
+                    // Sort descending
+                    ranking.sort((a,b) => b.pct - a.pct);
+
+                    const tbody = document.querySelector('#table-stages-rank tbody');
+                    tbody.innerHTML = '';
+                    ranking.forEach((r, idx) => {
+                        tbody.innerHTML += `<tr>
+                            <td>${idx + 1}</td>
+                            <td>${r.name}</td>
+                            <td>${r.total}</td>
+                            <td>${r.active}</td>
+                            <td><span class="badge bg-${r.pct > 80 ? 'success' : 'warning'}">${Math.round(r.pct)}%</span></td>
+                        </tr>`;
+                    });
+                },
+                updateRankFilters: function(level) {
+                    const sSel = document.getElementById('rank-stage');
+                    const gSel = document.getElementById('rank-grade');
+                    const cSel = document.getElementById('rank-class');
+                    const wSel = document.getElementById('rank-week');
+                    const swSel = document.getElementById('rank-stage-week'); // For stages rank
+
+                    if(level === 'init') {
+                        // populate stages and weeks
+                         wSel.innerHTML = '<option value="all">كل الأسابيع</option>';
+                         if(swSel) swSel.innerHTML = '<option value="all">الجميع</option>';
+                         
+                         System.data.weeks.forEach(w => {
+                             wSel.innerHTML += `<option value="${w.id}">${w.name}</option>`;
+                             if(swSel) swSel.innerHTML += `<option value="${w.id}">${w.name}</option>`;
+                         });
+
+                         sSel.innerHTML = '<option value="all">كل المراحل</option>';
+                         System.data.schools.forEach(s => s.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${st.name}</option>`));
+                    }
+                    
+                    if(level === 'stage' || level === 'init') {
+                         gSel.innerHTML = '<option value="all">كل الصفوف</option>';
+                         const sid = sSel.value;
+                         System.data.schools.forEach(s => s.stages.forEach(st => {
+                             if(sid !== 'all' && st.id != sid) return;
+                             st.grades.forEach(g => gSel.innerHTML += `<option value="${g.id}">${g.name}</option>`);
+                         }));
+                    }
+
+                    if(level === 'grade' || level === 'stage' || level === 'init') {
+                         cSel.innerHTML = '<option value="all">كل الفصول</option>';
+                         const gid = gSel.value;
+                         System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => {
+                             if(gid !== 'all' && g.id != gid) return;
+                             g.classes.forEach(c => cSel.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+                         })));
+                    }
+                },
+                renderTeachersRank: function() {
+                    const filterStage = document.getElementById('rank-stage').value;
+                    const filterGrade = document.getElementById('rank-grade').value;
+                    const filterClass = document.getElementById('rank-class').value;
+                    const filterWeek = document.getElementById('rank-week').value;
+
+                    // Group evals by teacher
+                    const teacherStats = {};
+
+                    System.data.evaluations.forEach(e => {
+                        // Filters Logic
+                        if(filterWeek !== 'all' && e.weekId != filterWeek) return;
+                        if(filterClass !== 'all' && e.classId != filterClass) return;
+                        
+                        // Hierarchical filter
+                        let matchesHierarchy = true;
+                        if(filterStage !== 'all' || filterGrade !== 'all') {
+                             System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                                 if(c.id === e.classId) {
+                                     if(filterStage !== 'all' && st.id != filterStage) matchesHierarchy = false;
+                                     if(filterGrade !== 'all' && g.id != filterGrade) matchesHierarchy = false;
+                                 }
+                             }))));
+                        }
+                        if(!matchesHierarchy) return;
+
+                        if(!teacherStats[e.teacherId]) teacherStats[e.teacherId] = { active: 0, visits: new Set() };
+                        teacherStats[e.teacherId].active++;
+                        teacherStats[e.teacherId].visits.add(e.weekId + '_' + e.classId);
+                    });
+
+                    const ranking = [];
+                    Object.keys(teacherStats).forEach(tid => {
+                        const t = System.data.users.find(u => u.id == tid);
+                        if(t) {
+                            const data = teacherStats[tid];
+                            const totalPossible = data.visits.size * System.data.criteria.length;
+                            const pct = totalPossible > 0 ? (data.active / totalPossible) * 100 : 0;
+                            // get assignment subject name
+                            const assign = System.data.assignments.find(a => a.teacherId == tid);
+                            const sub = assign ? System.utils.getSubjectName(assign.subjectId) : '-';
+
+                            ranking.push({ name: t.name, subject: sub, visits: data.visits.size, pct: pct });
+                        }
+                    });
+
+                    ranking.sort((a,b) => b.pct - a.pct);
+
+                    const tbody = document.querySelector('#table-teachers-rank tbody');
+                    tbody.innerHTML = '';
+                    ranking.forEach((r, idx) => {
+                         tbody.innerHTML += `<tr>
+                            <td>${idx + 1}</td>
+                            <td>${r.name}</td>
+                            <td>${r.subject}</td>
+                            <td>${r.visits}</td>
+                            <td><span class="fw-bold ${r.pct < 50 ? 'text-danger' : 'text-success'}">${Math.round(r.pct)}%</span></td>
+                        </tr>`;
+                    });
                 },
                 renderPieChart: function(data) { const ctx = document.getElementById('chart-pie').getContext('2d'); if(System.charts.pie) System.charts.pie.destroy(); System.charts.pie = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545'] }] } }); },
                 renderBarChart: function(evals) { 
