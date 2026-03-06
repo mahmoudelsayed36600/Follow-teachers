@@ -12,7 +12,8 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
         
-        body { font-family: 'Tajawal', sans-serif; background-color: #f4f6f9; overflow-x: hidden; }
+        /* تم تغيير لون الخلفية إلى الأبيض بناء على طلبك */
+        body { font-family: 'Tajawal', sans-serif; background-color: #ffffff; overflow-x: hidden; }
         
         /* Sidebar Styling */
         .sidebar {
@@ -155,13 +156,30 @@
         })();
     </script>
 </head>
-<body class=""> <!-- Removed default secure-mode class, handled by CSS :not(.is-admin) -->
+<body class="">
 
     <div id="loading-overlay" class="hidden">
         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
             <span class="visually-hidden">Loading...</span>
         </div>
         <h5 class="mt-3 text-secondary">جاري الاتصال بقاعدة البيانات...</h5>
+    </div>
+
+    <!-- نافذة تنبيه مخصصة (بدلاً من alert) -->
+    <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-info-circle ms-2"></i>تنبيه النظام</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4 fs-5" id="customAlertBody">
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">حسناً</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="missingItemsModal" tabindex="-1" aria-hidden="true">
@@ -585,13 +603,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script type="module">
+        // نحن نستورد من روابط CDN لتعمل الأكواد مباشرة على المتصفح بدون مشاكل (bundlers)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // --- ضع إعدادات FIREBASE الخاصة بك هنا ---
+        // --- إعدادات FIREBASE المحدثة بناءً على طلبك ---
         const firebaseConfig = {
             apiKey: "AIzaSyBccRKZbS8IEmHUSVTuyWeA9Occ7ZcJJBw",
-            authDomain: "https://following-app-2942a-default-rtdb.firebaseio.com",
+            authDomain: "following-app-2942a.firebaseapp.com",
+            databaseURL: "https://following-app-2942a-default-rtdb.firebaseio.com",
             projectId: "following-app-2942a",
             storageBucket: "following-app-2942a.firebasestorage.app",
             messagingSenderId: "980788870418",
@@ -656,7 +676,7 @@
 
                 } catch (error) {
                     console.error("Firebase Error:", error);
-                    alert("حدث خطأ في الاتصال بقاعدة البيانات. يرجى التأكد من الإنترنت أو إعدادات Firebase.");
+                    System.utils.showAlert("حدث خطأ في الاتصال بقاعدة البيانات. يرجى التأكد من الإنترنت أو إعدادات Firebase.");
                 } finally {
                     document.getElementById('loading-overlay').classList.add('hidden');
                 }
@@ -666,10 +686,9 @@
                 // Optimistic UI update, then background save
                 try {
                     await setDoc(dbRef, this.data);
-                    // alert("تم الحفظ في السحابة"); // Optional: Feedback
                 } catch(e) {
                     console.error("Save Error", e);
-                    alert("فشل الحفظ في قاعدة البيانات!");
+                    System.utils.showAlert("فشل الحفظ في قاعدة البيانات!");
                 }
             },
 
@@ -684,7 +703,7 @@
                         sessionStorage.setItem('currentUser', JSON.stringify(user));
                         this.postLoginInit();
                     } else {
-                        alert('بيانات الدخول غير صحيحة');
+                        System.utils.showAlert('بيانات الدخول غير صحيحة');
                     }
                 },
                 logout: function() {
@@ -813,9 +832,9 @@
                 deleteClass: function(sid, stid, gid, cid) { if(confirm('حذف الفصل؟')) { const s = System.data.schools.find(x=>x.id==sid); const st = s.stages.find(x=>x.id==stid); const g = st.grades.find(x=>x.id==gid); g.classes = g.classes.filter(x=>x.id!=cid); System.save(); this.renderAllLists(); } },
 
                 addSchool: function() { const n = document.getElementById('new-school-name').value; if(n) { if(!System.data.schools) System.data.schools = []; System.data.schools.push({id: Date.now(), name: n, stages:[]}); System.save(); this.renderAllLists(); document.getElementById('new-school-name').value=''; } },
-                addStage: function() { const sid = parseInt(document.getElementById('struct-school-select').value); const n = document.getElementById('new-stage-name').value; if(sid && n) { const school = System.data.schools.find(s => s.id === sid); if(school) { if(!school.stages) school.stages = []; school.stages.push({id: this.genId(), name: n, grades:[]}); System.save(); System.ui.updateStagesDropdown(); this.renderStructurePreview(); document.getElementById('new-stage-name').value = ''; } } else { alert('اختر المدرسة'); } },
-                addGrade: function() { const sid = parseInt(document.getElementById('struct-school-select').value); const stid = document.getElementById('struct-stage-select').value; const n = document.getElementById('new-grade-name').value; if(sid && stid && n) { const school = System.data.schools.find(s => s.id === sid); if(school) { const stage = school.stages.find(s => s.id === stid); if(stage) { if(!stage.grades) stage.grades = []; stage.grades.push({id: this.genId(), name: n, classes:[]}); System.save(); System.ui.updateGradesDropdown(); this.renderStructurePreview(); document.getElementById('new-grade-name').value = ''; } } } else { alert('اختر المرحلة'); } },
-                addClass: function() { const sid = parseInt(document.getElementById('struct-school-select').value); const stid = document.getElementById('struct-stage-select').value; const gid = document.getElementById('struct-grade-select').value; const n = document.getElementById('new-class-name').value; if(sid && stid && gid && n) { const school = System.data.schools.find(s => s.id === sid); if(school) { const stage = school.stages.find(s => s.id === stid); if(stage) { const grade = stage.grades.find(g => g.id === gid); if(grade) { if(!grade.classes) grade.classes = []; grade.classes.push({id: this.genId(), name: n}); System.save(); this.renderStructurePreview(); document.getElementById('new-class-name').value = ''; } } } } else { alert('اختر الصف'); } },
+                addStage: function() { const sid = parseInt(document.getElementById('struct-school-select').value); const n = document.getElementById('new-stage-name').value; if(sid && n) { const school = System.data.schools.find(s => s.id === sid); if(school) { if(!school.stages) school.stages = []; school.stages.push({id: this.genId(), name: n, grades:[]}); System.save(); System.ui.updateStagesDropdown(); this.renderStructurePreview(); document.getElementById('new-stage-name').value = ''; } } else { System.utils.showAlert('اختر المدرسة'); } },
+                addGrade: function() { const sid = parseInt(document.getElementById('struct-school-select').value); const stid = document.getElementById('struct-stage-select').value; const n = document.getElementById('new-grade-name').value; if(sid && stid && n) { const school = System.data.schools.find(s => s.id === sid); if(school) { const stage = school.stages.find(s => s.id === stid); if(stage) { if(!stage.grades) stage.grades = []; stage.grades.push({id: this.genId(), name: n, classes:[]}); System.save(); System.ui.updateGradesDropdown(); this.renderStructurePreview(); document.getElementById('new-grade-name').value = ''; } } } else { System.utils.showAlert('اختر المرحلة'); } },
+                addClass: function() { const sid = parseInt(document.getElementById('struct-school-select').value); const stid = document.getElementById('struct-stage-select').value; const gid = document.getElementById('struct-grade-select').value; const n = document.getElementById('new-class-name').value; if(sid && stid && gid && n) { const school = System.data.schools.find(s => s.id === sid); if(school) { const stage = school.stages.find(s => s.id === stid); if(stage) { const grade = stage.grades.find(g => g.id === gid); if(grade) { if(!grade.classes) grade.classes = []; grade.classes.push({id: this.genId(), name: n}); System.save(); this.renderStructurePreview(); document.getElementById('new-class-name').value = ''; } } } } else { System.utils.showAlert('اختر الصف'); } },
                 addSubject: function() { const n = document.getElementById('new-subject-name').value; if(n) { if(!System.data.subjects) System.data.subjects = []; System.data.subjects.push({id: Date.now(), name: n}); System.save(); this.renderList('subjects', System.data.subjects); document.getElementById('new-subject-name').value=''; } },
                 addWeek: function() { const n = document.getElementById('new-week-name').value; if(n) { if(!System.data.weeks) System.data.weeks = []; System.data.weeks.push({id: Date.now(), name: n}); System.save(); this.renderList('weeks', System.data.weeks); document.getElementById('new-week-name').value=''; } },
                 addCriteria: function() { const n = document.getElementById('new-criteria-name').value; if(n) { if(!System.data.criteria) System.data.criteria = []; System.data.criteria.push({id: Date.now(), name: n}); System.save(); this.renderList('criteria', System.data.criteria); document.getElementById('new-criteria-name').value=''; } },
@@ -825,7 +844,7 @@
                 initUserView: function() { const schSel = document.getElementById('user-school-select'); schSel.innerHTML = '<option value="">اختر المدرسة</option>'; System.data.schools.forEach(s => schSel.innerHTML += `<option value="${s.id}">${s.name}</option>`); const subSel = document.getElementById('user-subject-select'); subSel.innerHTML = '<option value="">اختر المادة</option>'; System.data.subjects.forEach(s => subSel.innerHTML += `<option value="${s.id}">${s.name}</option>`); this.renderUsersTable(); },
                 saveUser: function() {
                     const id = document.getElementById('user-edit-id').value; const name = document.getElementById('user-fullname').value; const username = document.getElementById('user-username').value; const mobile = document.getElementById('user-mobile').value; const password = document.getElementById('user-password').value; const role = document.getElementById('user-role').value; const schoolId = parseInt(document.getElementById('user-school-select').value); const subjectId = document.getElementById('user-subject-select').value;
-                    if(!name || !username || !schoolId || !mobile) return alert('بيانات ناقصة');
+                    if(!name || !username || !schoolId || !mobile) return System.utils.showAlert('بيانات ناقصة');
                     const scope = { stageIds: [], gradeIds: [] }; document.querySelectorAll('.scope-check:checked').forEach(cb => { const [st, gr] = cb.value.split('|'); if(!scope.stageIds.includes(st)) scope.stageIds.push(st); scope.gradeIds.push(gr); });
                     const generatedPass = System.utils.generatePassword(); const finalPassword = password ? password : (id ? null : generatedPass);
                     const userObj = { id: id ? parseInt(id) : Date.now(), name, username, role, schoolId, mobile, subjectId: subjectId?parseInt(subjectId):null, scope };
@@ -842,7 +861,7 @@
                 updateAssignStages: function() { System.ui.updateStagesDropdown('assign-school', 'assign-stage'); },
                 updateAssignGrades: function() { System.ui.updateGradesDropdown('assign-school', 'assign-stage', 'assign-grade'); },
                 updateAssignClasses: function() { const schoolId = parseInt(document.getElementById('assign-school').value); const gradeId = document.getElementById('assign-grade').value; const stageId = document.getElementById('assign-stage').value; const cSel = document.getElementById('assign-class'); const tSel = document.getElementById('assign-teacher'); cSel.innerHTML = ''; tSel.innerHTML = '<option value="">اختر المعلم</option>'; const school = System.data.schools.find(s => s.id === schoolId); if(school && stageId && gradeId) { const stage = school.stages.find(s => s.id === stageId); const grade = stage.grades.find(g => g.id === gradeId); if(grade && grade.classes) grade.classes.forEach(c => cSel.innerHTML += `<option value="${c.id}">${c.name}</option>`); } System.data.users.filter(u => u.schoolId === schoolId && u.role === 'teacher').forEach(t => { tSel.innerHTML += `<option value="${t.id}">${t.name}</option>`; }); },
-                saveAssignment: function() { const tId = parseInt(document.getElementById('assign-teacher').value); const cId = document.getElementById('assign-class').value; const subId = document.getElementById('assign-subject').value; if(!tId || !cId) return alert('البيانات ناقصة'); if(System.data.assignments.find(a => a.teacherId === tId && a.classId === cId)) return alert('مضاف مسبقاً'); const user = System.data.users.find(u => u.id === tId); const finalSubjectId = subId ? parseInt(subId) : user.subjectId; System.data.assignments.push({ id: Date.now(), teacherId: tId, classId: cId, subjectId: finalSubjectId }); System.save(); this.renderCurrentAssignments(); alert('تم الربط'); },
+                saveAssignment: function() { const tId = parseInt(document.getElementById('assign-teacher').value); const cId = document.getElementById('assign-class').value; const subId = document.getElementById('assign-subject').value; if(!tId || !cId) return System.utils.showAlert('البيانات ناقصة'); if(System.data.assignments.find(a => a.teacherId === tId && a.classId === cId)) return System.utils.showAlert('مضاف مسبقاً'); const user = System.data.users.find(u => u.id === tId); const finalSubjectId = subId ? parseInt(subId) : user.subjectId; System.data.assignments.push({ id: Date.now(), teacherId: tId, classId: cId, subjectId: finalSubjectId }); System.save(); this.renderCurrentAssignments(); System.utils.showAlert('تم الربط بنجاح'); },
                 renderCurrentAssignments: function() { const tbody = document.getElementById('assignments-table-body'); tbody.innerHTML = ''; System.data.assignments.forEach(a => { const t = System.data.users.find(u => u.id === a.teacherId); if(t) { const s = System.data.schools.find(school => school.id === t.schoolId); let stageName = '-', gradeName = '-', className = '-'; if(s) { s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => { if(c.id === a.classId) { stageName = st.name; gradeName = g.name; className = c.name; } }))); } const subName = a.subjectId ? (System.data.subjects.find(sub=>sub.id == a.subjectId)?.name || 'غير محدد') : 'غير محدد'; tbody.innerHTML += `<tr><td>${s ? s.name : '-'}</td><td>${stageName} - ${gradeName}</td><td>${className}</td><td class="fw-bold text-primary">${t.name}</td><td>${subName}</td><td><button class="btn btn-sm btn-danger" onclick="System.admin.delAssignment(${a.id})"><i class="fas fa-trash"></i></button></td></tr>`; } }); },
                 delAssignment: function(id) { if(confirm('إلغاء التسكين؟')) { System.data.assignments = System.data.assignments.filter(a => a.id !== id); System.save(); this.renderCurrentAssignments(); } }
             },
@@ -853,8 +872,8 @@
                 updateEntryClasses: function() { const schoolId = System.currentUser.schoolId; const stageId = document.getElementById('entry-stage').value; const gradeId = document.getElementById('entry-grade').value; const cSel = document.getElementById('entry-class'); cSel.innerHTML = '<option value="">اختر الفصل</option>'; document.getElementById('entry-teacher').innerHTML = ''; const school = System.data.schools.find(s => s.id === schoolId); if(school && stageId && gradeId) { const stage = school.stages.find(s => s.id === stageId); const grade = stage.grades.find(g => g.id === gradeId); if(grade && grade.classes) grade.classes.forEach(c => cSel.innerHTML += `<option value="${c.id}">${c.name}</option>`); } document.getElementById('matrix-container').classList.add('hidden'); },
                 updateEntryTeachers: function() { const classId = document.getElementById('entry-class').value; const tSel = document.getElementById('entry-teacher'); tSel.innerHTML = '<option value="">اختر المعلم</option>'; document.getElementById('entry-subject').innerHTML = ''; if(!classId) return; const assigns = System.data.assignments.filter(a => a.classId === classId); assigns.forEach(a => { const t = System.data.users.find(u => u.id === a.teacherId); if(t) tSel.innerHTML += `<option value="${t.id}">${t.name}</option>`; }); },
                 updateEntrySubjects: function() { const tId = parseInt(document.getElementById('entry-teacher').value); const classId = document.getElementById('entry-class').value; const sSel = document.getElementById('entry-subject'); sSel.innerHTML = ''; if(!tId || !classId) return; const assign = System.data.assignments.find(a => a.teacherId === tId && a.classId === classId); if(assign && assign.subjectId) { const sub = System.data.subjects.find(s => s.id === assign.subjectId); if(sub) sSel.innerHTML = `<option value="${sub.id}">${sub.name}</option>`; } else { sSel.innerHTML = '<option value="">غير محدد</option>'; } },
-                loadMatrix: function() { const classId = document.getElementById('entry-class').value; const weekId = parseInt(document.getElementById('entry-week').value); const dateVal = document.getElementById('entry-date').value; const teacherId = parseInt(document.getElementById('entry-teacher').value); if(!classId || !weekId || !teacherId || !dateVal) return alert('الرجاء إكمال جميع الحقول'); let className = ""; System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => { if(c.id === classId) className = `${s.name} - ${st.name} - ${g.name} - ${c.name}`; })))); const weekName = System.data.weeks.find(w => w.id === weekId)?.name; document.getElementById('matrix-title').innerHTML = `تقييم ${className} | ${weekName} <br> <span class="text-dark small">${dateVal}</span>`; const assignments = System.data.assignments.filter(a => a.classId === classId && a.teacherId === teacherId); const table = document.querySelector('#matrix-table'); if(assignments.length === 0) { table.querySelector('thead').innerHTML = ''; table.querySelector('tbody').innerHTML = '<tr><td colspan="100" class="text-center p-3 text-danger">لا يوجد تسكين.</td></tr>'; document.getElementById('matrix-container').classList.remove('hidden'); document.getElementById('btn-save-matrix').classList.add('hidden'); return; } let thead = `<tr><th style="width:30%">المعيار</th>`; const teachers = []; assignments.forEach(a => { const t = System.data.users.find(u => u.id === a.teacherId); const subName = System.data.subjects.find(s => s.id === a.subjectId)?.name || ''; teachers.push({t, subName}); thead += `<th>${t.name}<br><small class="text-secondary">${subName}</small></th>`; }); thead += `</tr>`; table.querySelector('thead').innerHTML = thead; let tbody = ''; System.data.criteria.forEach(crit => { tbody += `<tr><td>${crit.name}</td>`; teachers.forEach(item => { const existing = System.data.evaluations.find(e => e.weekId === weekId && e.classId === classId && e.teacherId === item.t.id && e.criteriaId === crit.id); tbody += `<td><input type="checkbox" class="checkbox-cell" data-tid="${item.t.id}" data-cid="${crit.id}" ${existing ? 'checked' : ''}></td>`; }); tbody += `</tr>`; }); tbody += `<tr><td class="bg-light fw-bold">ملاحظات</td>`; teachers.forEach(item => { const existing = System.data.evaluations.find(e => e.weekId === weekId && e.classId === classId && e.teacherId === item.t.id); const noteText = existing ? (existing.notes || '') : ''; tbody += `<td><textarea class="form-control teacher-note" data-tid="${item.t.id}" rows="2" placeholder="ملاحظات...">${noteText}</textarea></td>`; }); tbody += `</tr>`; table.querySelector('tbody').innerHTML = tbody; document.getElementById('matrix-container').classList.remove('hidden'); document.getElementById('btn-save-matrix').classList.remove('hidden'); },
-                saveMatrix: function() { const classId = document.getElementById('entry-class').value; const weekId = parseInt(document.getElementById('entry-week').value); const date = document.getElementById('entry-date').value; const tids = [...new Set(Array.from(document.querySelectorAll('.checkbox-cell')).map(c => parseInt(c.dataset.tid)))]; System.data.evaluations = System.data.evaluations.filter(e => !(e.weekId === weekId && e.classId === classId && tids.includes(e.teacherId))); document.querySelectorAll('.checkbox-cell:checked').forEach(cb => { const tid = parseInt(cb.dataset.tid); const cid = isNaN(cb.dataset.cid) ? cb.dataset.cid : parseInt(cb.dataset.cid); const note = document.querySelector(`.teacher-note[data-tid="${tid}"]`)?.value || ''; System.data.evaluations.push({ weekId, classId, teacherId: tid, criteriaId: cid, value: 1, date, notes: note }); }); System.save(); alert('تم حفظ التقييم'); }
+                loadMatrix: function() { const classId = document.getElementById('entry-class').value; const weekId = parseInt(document.getElementById('entry-week').value); const dateVal = document.getElementById('entry-date').value; const teacherId = parseInt(document.getElementById('entry-teacher').value); if(!classId || !weekId || !teacherId || !dateVal) return System.utils.showAlert('الرجاء إكمال جميع الحقول'); let className = ""; System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => { if(c.id === classId) className = `${s.name} - ${st.name} - ${g.name} - ${c.name}`; })))); const weekName = System.data.weeks.find(w => w.id === weekId)?.name; document.getElementById('matrix-title').innerHTML = `تقييم ${className} | ${weekName} <br> <span class="text-dark small">${dateVal}</span>`; const assignments = System.data.assignments.filter(a => a.classId === classId && a.teacherId === teacherId); const table = document.querySelector('#matrix-table'); if(assignments.length === 0) { table.querySelector('thead').innerHTML = ''; table.querySelector('tbody').innerHTML = '<tr><td colspan="100" class="text-center p-3 text-danger">لا يوجد تسكين.</td></tr>'; document.getElementById('matrix-container').classList.remove('hidden'); document.getElementById('btn-save-matrix').classList.add('hidden'); return; } let thead = `<tr><th style="width:30%">المعيار</th>`; const teachers = []; assignments.forEach(a => { const t = System.data.users.find(u => u.id === a.teacherId); const subName = System.data.subjects.find(s => s.id === a.subjectId)?.name || ''; teachers.push({t, subName}); thead += `<th>${t.name}<br><small class="text-secondary">${subName}</small></th>`; }); thead += `</tr>`; table.querySelector('thead').innerHTML = thead; let tbody = ''; System.data.criteria.forEach(crit => { tbody += `<tr><td>${crit.name}</td>`; teachers.forEach(item => { const existing = System.data.evaluations.find(e => e.weekId === weekId && e.classId === classId && e.teacherId === item.t.id && e.criteriaId === crit.id); tbody += `<td><input type="checkbox" class="checkbox-cell" data-tid="${item.t.id}" data-cid="${crit.id}" ${existing ? 'checked' : ''}></td>`; }); tbody += `</tr>`; }); tbody += `<tr><td class="bg-light fw-bold">ملاحظات</td>`; teachers.forEach(item => { const existing = System.data.evaluations.find(e => e.weekId === weekId && e.classId === classId && e.teacherId === item.t.id); const noteText = existing ? (existing.notes || '') : ''; tbody += `<td><textarea class="form-control teacher-note" data-tid="${item.t.id}" rows="2" placeholder="ملاحظات...">${noteText}</textarea></td>`; }); tbody += `</tr>`; table.querySelector('tbody').innerHTML = tbody; document.getElementById('matrix-container').classList.remove('hidden'); document.getElementById('btn-save-matrix').classList.remove('hidden'); },
+                saveMatrix: function() { const classId = document.getElementById('entry-class').value; const weekId = parseInt(document.getElementById('entry-week').value); const date = document.getElementById('entry-date').value; const tids = [...new Set(Array.from(document.querySelectorAll('.checkbox-cell')).map(c => parseInt(c.dataset.tid)))]; System.data.evaluations = System.data.evaluations.filter(e => !(e.weekId === weekId && e.classId === classId && tids.includes(e.teacherId))); document.querySelectorAll('.checkbox-cell:checked').forEach(cb => { const tid = parseInt(cb.dataset.tid); const cid = isNaN(cb.dataset.cid) ? cb.dataset.cid : parseInt(cb.dataset.cid); const note = document.querySelector(`.teacher-note[data-tid="${tid}"]`)?.value || ''; System.data.evaluations.push({ weekId, classId, teacherId: tid, criteriaId: cid, value: 1, date, notes: note }); }); System.save(); System.utils.showAlert('تم حفظ التقييم بنجاح'); }
             },
 
             dashboard: {
@@ -1396,6 +1415,10 @@
 
             utils: {
                 generatePassword: function() { return Math.random().toString(36).slice(-8); },
+                showAlert: function(msg) {
+                    document.getElementById('customAlertBody').innerText = msg;
+                    new bootstrap.Modal(document.getElementById('customAlertModal')).show();
+                },
                 sendWhatsapp: function(mobile, teacherId, msg, missingItemsStr) { 
                     if(!mobile) return; 
                     const today = new Date(); 
@@ -1404,7 +1427,7 @@
                     System.ui.updateNotificationCount(); 
                     window.open(`https://wa.me/${mobile}?text=${encodeURIComponent(msg)}`, '_blank'); 
                 },
-                printAllNotifications: function() { if(System.data.notifications.length === 0) return alert('لا توجد إشعارات'); let html = `<div style="direction: rtl; text-align: right; padding: 20px;"><h2 style="text-align: center;">سجل الإشعارات</h2><table style="width: 100%; border-collapse: collapse; border: 1px solid #000;"><thead><tr style="background: #f0f0f0;"><th style="border: 1px solid #000; padding: 8px;">التاريخ</th><th style="border: 1px solid #000; padding: 8px;">المعلم</th><th style="border: 1px solid #000; padding: 8px;">التفاصيل</th></tr></thead><tbody>`; [...System.data.notifications].reverse().forEach(n => { const t = System.data.users.find(u => u.id === n.teacherId)?.name || 'غير معروف'; const fullText = n.details + (n.missing ? `<br><small><b>النواقص:</b> ${n.missing}</small>` : ''); html += `<tr><td style="border: 1px solid #000; padding: 8px;">${n.date}</td><td style="border: 1px solid #000; padding: 8px;">${t}</td><td style="border: 1px solid #000; padding: 8px;">${fullText}</td></tr>`; }); html += `</tbody></table></div>`; document.getElementById('print-area-container').innerHTML = html; document.body.classList.add('printing-notification'); window.print(); document.body.classList.remove('printing-notification'); },
+                printAllNotifications: function() { if(System.data.notifications.length === 0) return System.utils.showAlert('لا توجد إشعارات'); let html = `<div style="direction: rtl; text-align: right; padding: 20px;"><h2 style="text-align: center;">سجل الإشعارات</h2><table style="width: 100%; border-collapse: collapse; border: 1px solid #000;"><thead><tr style="background: #f0f0f0;"><th style="border: 1px solid #000; padding: 8px;">التاريخ</th><th style="border: 1px solid #000; padding: 8px;">المعلم</th><th style="border: 1px solid #000; padding: 8px;">التفاصيل</th></tr></thead><tbody>`; [...System.data.notifications].reverse().forEach(n => { const t = System.data.users.find(u => u.id === n.teacherId)?.name || 'غير معروف'; const fullText = n.details + (n.missing ? `<br><small><b>النواقص:</b> ${n.missing}</small>` : ''); html += `<tr><td style="border: 1px solid #000; padding: 8px;">${n.date}</td><td style="border: 1px solid #000; padding: 8px;">${t}</td><td style="border: 1px solid #000; padding: 8px;">${fullText}</td></tr>`; }); html += `</tbody></table></div>`; document.getElementById('print-area-container').innerHTML = html; document.body.classList.add('printing-notification'); window.print(); document.body.classList.remove('printing-notification'); },
                 getSubjectName: function(id) { return System.data.subjects.find(s=>s.id == id)?.name || ''; }
             },
 
@@ -1491,7 +1514,7 @@
             
             procedures: { 
                 init: function() { const tSel = document.getElementById('proc-teacher'); tSel.innerHTML = ''; System.data.users.filter(u => u.role === 'teacher').forEach(t => tSel.innerHTML += `<option value="${t.id}">${t.name}</option>`); this.renderList(); }, 
-                add: function() { const tid = parseInt(document.getElementById('proc-teacher').value); const type = document.getElementById('proc-type').value; const date = document.getElementById('proc-date').value; const situation = document.getElementById('proc-situation').value; const action = document.getElementById('proc-action').value; if(tid && date) { System.data.procedures.push({id:Date.now(), teacherId:tid, type, date, situation, action}); System.save(); alert('تم الحفظ'); this.renderList(); } }, 
+                add: function() { const tid = parseInt(document.getElementById('proc-teacher').value); const type = document.getElementById('proc-type').value; const date = document.getElementById('proc-date').value; const situation = document.getElementById('proc-situation').value; const action = document.getElementById('proc-action').value; if(tid && date) { System.data.procedures.push({id:Date.now(), teacherId:tid, type, date, situation, action}); System.save(); System.utils.showAlert('تم الحفظ بنجاح'); this.renderList(); } }, 
                 renderList: function() { 
                     const tbody = document.querySelector('#procedures-table tbody'); 
                     tbody.innerHTML = ''; 
