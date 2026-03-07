@@ -79,6 +79,7 @@
         .cursor-pointer { cursor: pointer; }
         .tree-action { cursor: pointer; font-size: 0.8rem; margin-right: 5px; opacity: 0.6; }
         .tree-action:hover { opacity: 1; transform: scale(1.1); }
+        .text-purple { color: #6f42c1 !important; }
 
         /* --- Security Styles --- */
         body:not(.is-admin) { 
@@ -119,7 +120,6 @@
             
             document.addEventListener('contextmenu', function(e) { 
                 if (!isAdmin()) { 
-                    // السماح بالزر الأيمن داخل حقول الإدخال لتسهيل الكتابة والدخول (مثل لصق كلمة المرور)
                     var tag = e.target.tagName;
                     if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
                         e.preventDefault(); 
@@ -130,13 +130,12 @@
 
             document.onkeydown = function(e) {
                 if (isAdmin()) return true;
-                
-                if (e.keyCode == 123) return false; // تعطيل F12
-                if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Ctrl+Shift+I
-                if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Ctrl+Shift+J
-                if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; // Ctrl+Shift+C
-                if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U
-                if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) return false; // Ctrl+S
+                if (e.keyCode == 123) return false;
+                if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+                if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+                if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
+                if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+                if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) return false;
             };
         })();
     </script>
@@ -158,8 +157,7 @@
                     <h5 class="modal-title"><i class="fas fa-info-circle ms-2"></i>تنبيه النظام</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body text-center py-4 fs-5" id="customAlertBody">
-                </div>
+                <div class="modal-body text-center py-4 fs-5" id="customAlertBody"></div>
                 <div class="modal-footer justify-content-center">
                     <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">حسناً</button>
                 </div>
@@ -190,7 +188,7 @@
     <div id="login-section"> 
         <div class="login-card text-center">
             <div class="mb-4"><i class="fas fa-cloud-upload-alt fa-3x text-primary"></i></div>
-            <h4 class="mb-4 fw-bold">بوابة المتابعة (للمعلمين)</h4>
+            <h4 class="mb-4 fw-bold">بوابة المتابعة</h4>
             <div class="mb-3 text-end">
                 <label class="form-label text-muted small">اسم المستخدم</label>
                 <input type="text" id="login-username" class="form-control" placeholder="أدخل اسم المستخدم">
@@ -200,7 +198,7 @@
                 <input type="password" id="login-password" class="form-control" placeholder="أدخل كلمة المرور">
             </div>
             <button onclick="System.auth.login()" class="btn btn-primary w-100 py-2 fw-bold">تسجيل الدخول</button>
-            </div>
+        </div>
     </div>
 
     <div id="sidebar" class="sidebar hidden">
@@ -262,7 +260,7 @@
                             </div>
                         </div>
                         <div class="mt-3">
-                            <h6 class="small text-muted">معاينة الهيكل (يمكنك التعديل والحذف):</h6>
+                            <h6 class="small text-muted">معاينة الهيكل:</h6>
                             <div id="structure-preview" class="border p-2 bg-white rounded" style="max-height: 250px; overflow-y: auto;"></div>
                         </div>
                     </div>
@@ -375,7 +373,6 @@
             <div class="section-card">
                  <h5 class="mb-3 border-bottom pb-2">فلترة الفصول غير المكتملة</h5>
                 <div class="row g-2 mb-3 no-print align-items-end">
-                    <!-- School Filter for Admins -->
                     <div class="col-md-2 admin-only"><label class="small">المدرسة</label><select id="dash-school" class="form-select" onchange="System.dashboard.updateDashStages()"></select></div>
                     <div class="col-md-2"><label class="small">الأسبوع</label><select id="dash-week" class="form-select"></select></div>
                     <div class="col-md-2"><label class="small">المرحلة</label><select id="dash-stage" class="form-select" onchange="System.dashboard.updateDashGrades()"></select></div>
@@ -388,12 +385,10 @@
             </div>
         </div>
 
-        <!-- Weekly Comparison View -->
         <div id="view-weekly-comparison" class="view-section hidden">
             <h3 class="mb-4 text-primary">المقارنات الأسبوعية</h3>
             <div class="section-card border-top border-4 border-warning">
                 <div class="row g-2 mb-3 bg-light p-2 rounded border no-print">
-                    <!-- School Filter for Admins -->
                     <div class="col-md-3 admin-only">
                         <label class="small fw-bold">المدرسة</label>
                         <select id="weekly-comp-school" class="form-select form-select-sm" onchange="System.dashboard.updateWeeklyCompStages()"></select>
@@ -429,7 +424,6 @@
             <div class="section-card border-top border-4 border-danger">
                  <h5 class="mb-3 border-bottom pb-2">فلترة بيانات النقص</h5>
                 <div class="row g-2 mb-3 no-print align-items-end">
-                    <!-- School Filter for Admins -->
                     <div class="col-md-2 admin-only"><label class="small">المدرسة</label><select id="gaps-school" class="form-select" onchange="System.gaps.updateStages()"></select></div>
                     <div class="col-md-2"><label class="small">المرحلة</label><select id="gaps-stage" class="form-select" onchange="System.gaps.updateGrades()"></select></div>
                     <div class="col-md-2"><label class="small">الصف</label><select id="gaps-grade" class="form-select"><option value="">الجميع</option></select></div>
@@ -449,7 +443,7 @@
             </div>
         </div>
 
-        <!-- إضافة قسم إدخال الزيارة -->
+        <!-- قسم إدخال الزيارة -->
         <div id="view-visits-entry" class="view-section hidden">
             <h3 class="mb-4 text-primary"><i class="fas fa-plus ms-2"></i>إدخال زيارة</h3>
             <div class="section-card border-top border-5 border-success">
@@ -469,7 +463,7 @@
             </div>
         </div>
 
-        <!-- إضافة قسم تقرير متوسط الزيارات -->
+        <!-- قسم تقرير متوسط الزيارات -->
         <div id="view-visits-report" class="view-section hidden">
             <h3 class="mb-4 text-primary"><i class="fas fa-table ms-2"></i>متوسط نسبة زيارات المعلم</h3>
             <div class="section-card border-top border-5 border-info">
@@ -488,12 +482,65 @@
             </div>
         </div>
 
+        <!-- قسم إدخال النتائج -->
+        <div id="view-results-entry" class="view-section hidden">
+            <h3 class="mb-4 text-purple"><i class="fas fa-edit ms-2"></i>إدخال نتائج المعلم</h3>
+            <div class="section-card border-top border-5" style="border-color: #6f42c1;">
+                <div class="row g-3 bg-light p-3 rounded">
+                    <div class="col-md-3 admin-only"><label class="small fw-bold">المدرسة</label><select id="res-entry-school" class="form-select form-select-sm" onchange="System.results.updateEntryStages()"></select></div>
+                    <div class="col-md-3"><label class="small fw-bold">المرحلة</label><select id="res-entry-stage" class="form-select form-select-sm" onchange="System.results.updateEntryTeachers()"></select></div>
+                    <div class="col-md-3"><label class="small fw-bold">الفصل الدراسي</label>
+                        <select id="res-entry-semester" class="form-select form-select-sm">
+                            <option value="1">الفصل الدراسي الأول</option>
+                            <option value="2">الفصل الدراسي الثاني</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"><label class="small fw-bold text-primary">المعلم</label><select id="res-entry-teacher" class="form-select form-select-sm"></select></div>
+                    <div class="col-md-3"><label class="small fw-bold text-danger">تحديد الاختبار</label>
+                        <select id="res-entry-exam" class="form-select form-select-sm">
+                            <option value="p1">اختبار الفترة الأولى</option>
+                            <option value="p2">اختبار الفترة الثانية</option>
+                            <option value="end">نهاية الفصل الدراسي</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end"><button onclick="System.results.loadClasses()" class="btn text-white w-100 fw-bold" style="background-color: #6f42c1;">عرض الفصول</button></div>
+                </div>
+                
+                <div id="res-entry-classes-container" class="mt-4">
+                    <!-- سيتم توليد الفصول وحقول الإدخال هنا -->
+                </div>
+                <div class="mt-3">
+                    <button id="btn-save-results" onclick="System.results.saveResults()" class="btn btn-success w-100 fw-bold hidden"><i class="fas fa-save ms-2"></i>حفظ النتائج</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- قسم تقرير معاينة نسب المعلم -->
+        <div id="view-results-report" class="view-section hidden">
+            <h3 class="mb-4 text-purple"><i class="fas fa-chart-area ms-2"></i>معاينة نسب المعلم</h3>
+            <div class="section-card border-top border-5" style="border-color: #6f42c1;">
+                <div class="row g-2 mb-3 bg-light p-2 rounded border no-print">
+                    <div class="col-md-3 admin-only"><label class="small fw-bold">المدرسة</label><select id="res-rep-school" class="form-select form-select-sm" onchange="System.results.updateReportStages()"></select></div>
+                    <div class="col-md-3"><label class="small fw-bold">المرحلة</label><select id="res-rep-stage" class="form-select form-select-sm" onchange="System.results.updateReportTeachers()"><option value="all">الجميع</option></select></div>
+                    <div class="col-md-4"><label class="small fw-bold">المعلم</label><select id="res-rep-teacher" class="form-select form-select-sm"><option value="all">الجميع</option></select></div>
+                    <div class="col-md-2 d-flex align-items-end"><button class="btn text-white btn-sm w-100 fw-bold" style="background-color: #6f42c1;" onclick="System.results.renderReport()">عرض البيانات</button></div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover text-center align-middle" id="teacher-results-table">
+                        <thead class="table-light">
+                            <!-- الترويسة سيتم بناؤها ديناميكياً -->
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div id="view-notifications" class="view-section hidden">
             <h3 class="mb-4 text-primary">الإشعارات</h3>
             
             <div class="section-card py-3 bg-light no-print">
                 <div class="row g-2 align-items-end">
-                    <!-- School Filter for Admins -->
                     <div class="col-md-3 admin-only">
                         <label class="small fw-bold mb-1">تصفية بالمدرسة:</label>
                         <select id="notif-filter-school" class="form-select" onchange="System.notifications.updateStages(); System.notifications.render()"></select>
@@ -532,7 +579,6 @@
                 </div>
             </div>
             <div class="section-card">
-                <!-- School Filter for Procedures Table -->
                 <div class="row mb-3 admin-only no-print">
                     <div class="col-md-4"><label class="small text-muted">فلترة الجدول بالمدرسة:</label><select id="proc-filter-school" class="form-select form-select-sm" onchange="System.procedures.renderList()"></select></div>
                 </div>
@@ -543,7 +589,6 @@
         <div id="view-teacher-file" class="view-section hidden">
             <h3 class="mb-4 text-primary">ملف المعلم</h3>
             <div class="row mb-3 no-print">
-                <!-- School Filter for Admin -->
                 <div class="col-md-3 admin-only"><select id="file-school-select" class="form-select" onchange="System.teacherFile.updateTeachers()"></select></div>
                 <div class="col-md-6"><select id="file-teacher-select" class="form-select" onchange="System.teacherFile.render()"><option value="">اختر المعلم...</option></select></div>
             </div>
@@ -562,7 +607,8 @@
                 <div class="section-card">
                     <ul class="nav nav-tabs mb-3" id="teacherFileTabs" role="tablist">
                         <li class="nav-item"><button class="nav-link active text-danger" data-bs-toggle="tab" data-bs-target="#tab-gaps" type="button">النواقص</button></li>
-                        <li class="nav-item"><button class="nav-link text-primary fw-bold" data-bs-toggle="tab" data-bs-target="#tab-visits" type="button">الزيارات</button></li> <!-- تبويبة الزيارات المضافة -->
+                        <li class="nav-item"><button class="nav-link text-primary fw-bold" data-bs-toggle="tab" data-bs-target="#tab-visits" type="button">الزيارات</button></li> 
+                        <li class="nav-item admin-super-only" style="display: none;"><button class="nav-link text-purple fw-bold" data-bs-toggle="tab" data-bs-target="#tab-results" type="button" id="tab-btn-results">نتائج المعلم</button></li>
                         <li class="nav-item"><button class="nav-link text-success" data-bs-toggle="tab" data-bs-target="#tab-positive" type="button">التميز</button></li>
                         <li class="nav-item"><button class="nav-link text-info" data-bs-toggle="tab" data-bs-target="#tab-notes" type="button">الملاحظات</button></li>
                         <li class="nav-item"><button class="nav-link text-secondary" data-bs-toggle="tab" data-bs-target="#tab-verbal" type="button">تنبيه شفهي</button></li>
@@ -572,7 +618,6 @@
                     <div class="tab-content">
                         <div class="tab-pane fade show active" id="tab-gaps" role="tabpanel"><div class="table-responsive"><table class="table table-bordered table-striped" id="table-gaps"><thead class="table-light"><tr><th>الفصل</th><th>الأسبوع</th><th>المادة</th><th>التاريخ</th><th>عدد النواقص</th><th>تفاصيل</th><th>الأداء %</th></tr></thead><tbody></tbody></table></div></div>
                         
-                        <!-- محتوى تبويبة الزيارات -->
                         <div class="tab-pane fade" id="tab-visits" role="tabpanel">
                             <div class="alert alert-info d-flex justify-content-between align-items-center">
                                 <strong>متوسط نسبة الزيارات العامة:</strong>
@@ -581,6 +626,16 @@
                             <div class="table-responsive">
                                 <table class="table table-bordered table-hover text-center" id="table-visits">
                                     <thead class="table-primary"><tr><th>م</th><th>التاريخ</th><th>الاسبوع</th><th>عنوان الدرس</th><th>الفصل</th><th>القائم بالزيارة</th><th>النسبة</th><th>الملاحظات</th></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-results" role="tabpanel">
+                            <div class="alert" style="background-color: #f3e8ff; color: #6f42c1; border-color: #6f42c1;">متوسط نسب المعلم (للفصلين الدراسيين)</div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover text-center align-middle" id="table-tf-results">
+                                    <thead class="table-light"></thead>
                                     <tbody></tbody>
                                 </table>
                             </div>
@@ -600,7 +655,6 @@
             <h3 class="mb-4 text-primary">التقارير</h3>
             <div class="section-card">
                 <div class="row g-2 mb-4 no-print bg-light p-3 rounded border" id="report-filters">
-                    <!-- School filter -->
                     <div class="col-md-3 admin-only"><label class="small fw-bold">المدرسة</label><select id="rep-school" class="form-select form-select-sm" onchange="System.reports.updateStages()"></select></div>
                     <div class="col-md-3"><label class="small fw-bold">المرحلة</label><select id="rep-stage" class="form-select form-select-sm"><option value="all">الكل</option></select></div>
                     <div class="col-md-3"><label class="small fw-bold">الأسبوع</label><select id="rep-week" class="form-select form-select-sm"><option value="all">الكل</option></select></div>
@@ -686,7 +740,7 @@
             users: [{id: 1, name: 'Admin', username: 'admin', password: 'Ma@521990', role: 'admin', mobile: '966500000000', schoolId: null, scope: {}}],
             schools: [], subjects: [], weeks: [],
             criteria: [{id: 'c1', name: 'تحضير الدروس'}, {id: 'c2', name: 'استخدام التقنية'}, {id: 'c3', name: 'الواجبات'}, {id: 'c4', name: 'المشاركة الصفية'}],
-            assignments: [], evaluations: [], procedures: [], notifications: [], visits: [] // تمت إضافة مصفوفة الزيارات
+            assignments: [], evaluations: [], procedures: [], notifications: [], visits: [], teacherResults: []
         };
 
         const System = {
@@ -698,7 +752,8 @@
                     const docSnap = await getDoc(dbRef);
                     if (docSnap.exists()) { 
                         this.data = docSnap.data(); 
-                        if(!this.data.visits) this.data.visits = []; // تحديث للبيانات القديمة
+                        if(!this.data.visits) this.data.visits = []; 
+                        if(!this.data.teacherResults) this.data.teacherResults = []; 
                     } 
                     else { this.data = JSON.parse(JSON.stringify(defaultData)); await setDoc(dbRef, defaultData); }
 
@@ -779,7 +834,6 @@
                         addLink('view-dashboard', 'حالة الرصد', 'fa-tachometer-alt'); 
                         addLink('view-weekly-comparison', 'المقارنات الأسبوعية', 'fa-calendar-alt'); 
                         
-                        // --- إضافة قائمة الزيارات المنسدلة ---
                         menu.innerHTML += `
                             <a href="#visitsMenu" data-bs-toggle="collapse" class="dropdown-toggle" id="link-visits-collapse"><i class="fas fa-eye ms-2"></i>الزيارات</a>
                             <div class="collapse" id="visitsMenu">
@@ -787,6 +841,16 @@
                                 <a href="#" onclick="System.ui.showView('view-visits-report')" id="link-view-visits-report"><i class="fas fa-chart-line ms-2"></i>متوسط نسبة الزيارات</a>
                             </div>
                         `;
+
+                        if (role === 'admin' || role === 'supervisor') {
+                            menu.innerHTML += `
+                                <a href="#resultsMenu" data-bs-toggle="collapse" class="dropdown-toggle" id="link-results-collapse"><i class="fas fa-graduation-cap ms-2"></i>نتائج المعلم</a>
+                                <div class="collapse" id="resultsMenu">
+                                    <a href="#" onclick="System.ui.showView('view-results-entry')" id="link-view-results-entry"><i class="fas fa-edit ms-2"></i>إدخال النتائج</a>
+                                    <a href="#" onclick="System.ui.showView('view-results-report')" id="link-view-results-report"><i class="fas fa-chart-area ms-2"></i>معاينة نسب المعلم</a>
+                                </div>
+                            `;
+                        }
 
                         addLink('view-gaps', 'النواقص', 'fa-exclamation-circle'); 
                         addLink('view-procedures', 'الإجراءات', 'fa-gavel'); 
@@ -801,16 +865,21 @@
                     const target = document.getElementById(viewId); if(target) target.classList.remove('hidden');
                     const link = document.getElementById('link-' + viewId); if(link) link.classList.add('active');
                     
-                    // إبقاء القائمة المنسدلة مفتوحة ونشطة إذا كنا داخلها
+                    const vMenu = document.getElementById('visitsMenu');
                     if(viewId === 'view-visits-entry' || viewId === 'view-visits-report') {
-                        document.getElementById('visitsMenu').classList.add('show');
-                        document.getElementById('link-visits-collapse').classList.add('active');
-                    } else {
-                        const vMenu = document.getElementById('visitsMenu');
-                        if(vMenu) vMenu.classList.remove('show');
-                    }
+                        if(vMenu) vMenu.classList.add('show');
+                        const lVCol = document.getElementById('link-visits-collapse');
+                        if(lVCol) lVCol.classList.add('active');
+                    } else { if(vMenu) vMenu.classList.remove('show'); }
 
-                    const titles = {'view-admin-structure':'الإعدادات', 'view-users':'المستخدمين', 'view-admin-assignments':'تسكين المعلمين', 'view-coordinator-entry':'إدخال البيانات', 'view-dashboard':'لوحة التحكم', 'view-notifications':'الإشعارات', 'view-reports':'التقارير', 'view-gaps': 'النواقص', 'view-weekly-comparison': 'المقارنات الأسبوعية', 'view-visits-entry': 'إدخال زيارة لمعلم', 'view-visits-report': 'متوسط نسبة الزيارات'};
+                    const resMenu = document.getElementById('resultsMenu');
+                    if(viewId === 'view-results-entry' || viewId === 'view-results-report') {
+                        if(resMenu) resMenu.classList.add('show');
+                        const lRCol = document.getElementById('link-results-collapse');
+                        if(lRCol) lRCol.classList.add('active');
+                    } else { if(resMenu) resMenu.classList.remove('show'); }
+
+                    const titles = {'view-admin-structure':'الإعدادات', 'view-users':'المستخدمين', 'view-admin-assignments':'تسكين المعلمين', 'view-coordinator-entry':'إدخال البيانات', 'view-dashboard':'لوحة التحكم', 'view-notifications':'الإشعارات', 'view-reports':'التقارير', 'view-gaps': 'النواقص', 'view-weekly-comparison': 'المقارنات الأسبوعية', 'view-visits-entry': 'إدخال زيارة لمعلم', 'view-visits-report': 'متوسط نسبة الزيارات', 'view-results-entry': 'إدخال نتائج المعلم', 'view-results-report': 'معاينة نسب المعلم'};
                     document.getElementById('page-header-title').innerText = titles[viewId] || '';
 
                     if(viewId === 'view-admin-structure') System.admin.renderAllLists();
@@ -826,360 +895,14 @@
                     if(viewId === 'view-weekly-comparison') System.dashboard.initWeeklyCompFilters(); 
                     if(viewId === 'view-visits-entry') System.visits.initEntry(); 
                     if(viewId === 'view-visits-report') System.visits.initReport(); 
+                    if(viewId === 'view-results-entry') System.results.initEntry();
+                    if(viewId === 'view-results-report') System.results.initReport();
                 },
                 updateNotificationCount: function() { document.getElementById('nav-badge').innerText = System.data.notifications.length; document.getElementById('notif-count-display').innerText = System.data.notifications.length; },
                 updateStagesDropdown: function(schoolSelectId = 'struct-school-select', stageSelectId = 'struct-stage-select') { const schoolId = parseInt(document.getElementById(schoolSelectId).value); const stageSelect = document.getElementById(stageSelectId); stageSelect.innerHTML = '<option value="">اختر المرحلة</option>'; const school = System.data.schools.find(s => s.id === schoolId); if(school && school.stages) school.stages.forEach(s => stageSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`); this.updateGradesDropdown(schoolSelectId, stageSelectId, 'struct-grade-select'); },
                 updateGradesDropdown: function(schoolIdRef = 'struct-school-select', stageIdRef = 'struct-stage-select', targetId = 'struct-grade-select') { const schoolId = parseInt(document.getElementById(schoolIdRef).value); const stageId = document.getElementById(stageIdRef).value; const gradeSelect = document.getElementById(targetId); gradeSelect.innerHTML = '<option value="">اختر الصف</option>'; const school = System.data.schools.find(s => s.id === schoolId); if(school) { const stage = school.stages.find(s => s.id === stageId); if(stage && stage.grades) stage.grades.forEach(g => gradeSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`); } },
                 toggleUserFields: function() { const role = document.getElementById('user-role').value; const fieldSub = document.getElementById('field-subject'); const scopeContainer = document.getElementById('scope-container'); if(['teacher', 'supervisor'].includes(role)) fieldSub.classList.remove('hidden'); else fieldSub.classList.add('hidden'); if(['coordinator', 'manager', 'teacher'].includes(role)) scopeContainer.classList.remove('hidden'); else scopeContainer.classList.add('hidden'); this.renderScopeOptions(); },
                 renderScopeOptions: function() { const schoolId = parseInt(document.getElementById('user-school-select').value); const container = document.getElementById('scope-options'); container.innerHTML = ''; const school = System.data.schools.find(s => s.id === schoolId); if(!school || !school.stages) { container.innerHTML = '<small class="text-muted">الرجاء اختيار مدرسة صالحة</small>'; return; } school.stages.forEach(stage => { let html = `<div class="border p-2 rounded bg-light" style="min-width: 150px;"><strong class="d-block border-bottom mb-1 text-primary">${stage.name}</strong>`; if(stage.grades) stage.grades.forEach(g => { html += `<div class="form-check"><input class="form-check-input scope-check" type="checkbox" value="${stage.id}|${g.id}" id="sc_${g.id}"><label class="form-check-label small" for="sc_${g.id}">${g.name}</label></div>`; }); html += `</div>`; container.innerHTML += html; }); }
-            },
-
-            // --- قسم الزيارات الجديد ---
-            visits: {
-                initEntry: function() {
-                    System.utils.populateSchools('visit-school');
-                    const wSel = document.getElementById('visit-week');
-                    wSel.innerHTML = '<option value="">اختر الأسبوع</option>';
-                    System.data.weeks.forEach(w => wSel.innerHTML += `<option value="${w.id}">${w.name}</option>`);
-                    document.getElementById('visit-date').valueAsDate = new Date();
-                    
-                    this.updateStages();
-                },
-                updateStages: function() {
-                    const sSel = document.getElementById('visit-stage');
-                    sSel.innerHTML = '<option value="">اختر المرحلة</option>';
-                    const schoolIdStr = document.getElementById('visit-school').value;
-                    const targetSchoolId = System.currentUser.role === 'admin' && schoolIdStr !== 'all' && schoolIdStr ? parseInt(schoolIdStr) : System.currentUser.schoolId;
-
-                    if (targetSchoolId) {
-                        const school = System.data.schools.find(s => s.id === targetSchoolId);
-                        if (school && school.stages) school.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
-                    } else if (System.currentUser.role === 'admin') {
-                        System.data.schools.forEach(s => s.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${s.name} - ${st.name}</option>`));
-                    }
-                    this.updateTeachers();
-                },
-                updateTeachers: function() {
-                    const stageId = document.getElementById('visit-stage').value;
-                    const schoolIdStr = document.getElementById('visit-school').value;
-                    const teacherSel = document.getElementById('visit-teacher');
-                    teacherSel.innerHTML = '<option value="">اختر المعلم</option>';
-                    document.getElementById('visit-grade').innerHTML = '<option value="">اختر الصف</option>';
-                    document.getElementById('visit-class').innerHTML = '<option value="">اختر الفصل</option>';
-                    
-                    const currentUser = System.currentUser;
-                    const teachers = System.data.users.filter(u => u.role === 'teacher');
-                    
-                    const filteredTeachers = teachers.filter(t => {
-                        if (currentUser.role === 'admin') {
-                            if (schoolIdStr !== 'all' && schoolIdStr && t.schoolId != schoolIdStr) return false;
-                        } else if (t.schoolId !== currentUser.schoolId) {
-                            return false;
-                        }
-                        
-                        if(stageId && stageId !== 'all') {
-                            let hasStage = false;
-                            const assignments = System.data.assignments.filter(a => a.teacherId === t.id);
-                            for(let a of assignments) {
-                                let clsStageId = null;
-                                System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
-                                    if(c.id === a.classId) clsStageId = st.id;
-                                }))));
-                                if(clsStageId == stageId) { hasStage = true; break; }
-                            }
-                            if(!hasStage) return false;
-                        }
-
-                        // Coordinator scope logic
-                        if(currentUser.role === 'coordinator') {
-                            const teacherAssigns = System.data.assignments.filter(a => a.teacherId === t.id);
-                            let inScope = false;
-                            for(let a of teacherAssigns) {
-                                const gid = System.dashboard.getGradeId(a.classId);
-                                if (currentUser.scope?.gradeIds?.includes(gid)) { inScope = true; break; }
-                            }
-                            if(!inScope) return false;
-                        }
-
-                        return true;
-                    });
-
-                    filteredTeachers.forEach(t => teacherSel.innerHTML += `<option value="${t.id}">${t.name}</option>`);
-                },
-                updateGradesAndClasses: function() {
-                    const teacherId = document.getElementById('visit-teacher').value;
-                    const gradeSel = document.getElementById('visit-grade');
-                    const classSel = document.getElementById('visit-class');
-                    gradeSel.innerHTML = '<option value="">اختر الصف</option>';
-                    classSel.innerHTML = '<option value="">اختر الفصل</option>';
-
-                    if(!teacherId) return;
-
-                    const assignments = System.data.assignments.filter(a => a.teacherId == teacherId);
-                    const gradeIds = new Set();
-                    
-                    assignments.forEach(a => {
-                        System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
-                            if(c.id === a.classId) {
-                                if (System.currentUser.role !== 'coordinator' || System.currentUser.scope?.gradeIds?.includes(g.id)) {
-                                    if(!gradeIds.has(g.id)) {
-                                        gradeIds.add(g.id);
-                                        gradeSel.innerHTML += `<option value="${g.id}">${g.name}</option>`;
-                                    }
-                                }
-                            }
-                        }))));
-                    });
-                },
-                updateClasses: function() {
-                    const teacherId = document.getElementById('visit-teacher').value;
-                    const gradeId = document.getElementById('visit-grade').value;
-                    const classSel = document.getElementById('visit-class');
-                    classSel.innerHTML = '<option value="">اختر الفصل</option>';
-
-                    if(!teacherId || !gradeId) return;
-                    const assignments = System.data.assignments.filter(a => a.teacherId == teacherId);
-
-                    assignments.forEach(a => {
-                        System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => {
-                            if(g.id == gradeId) {
-                                g.classes.forEach(c => {
-                                    if(c.id === a.classId) {
-                                        classSel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-                                    }
-                                });
-                            }
-                        })));
-                    });
-                },
-                saveVisit: function() {
-                    const schoolIdStr = document.getElementById('visit-school').value;
-                    const stageId = document.getElementById('visit-stage').value;
-                    const teacherId = parseInt(document.getElementById('visit-teacher').value);
-                    const gradeId = document.getElementById('visit-grade').value;
-                    const classId = document.getElementById('visit-class').value;
-                    const weekId = parseInt(document.getElementById('visit-week').value);
-                    const date = document.getElementById('visit-date').value;
-                    const lessonTitle = document.getElementById('visit-lesson').value;
-                    const percentage = document.getElementById('visit-percentage').value;
-                    const notes = document.getElementById('visit-notes').value;
-
-                    // Validation
-                    if(!teacherId || !classId || !weekId || !date || !lessonTitle || percentage === "") {
-                        return System.utils.showAlert("الرجاء إكمال جميع الحقول المطلوبة (المعلم، الفصل، الأسبوع، التاريخ، عنوان الدرس، النسبة).");
-                    }
-                    
-                    const numPercentage = parseFloat(percentage);
-                    if(isNaN(numPercentage) || numPercentage < 0 || numPercentage > 100) {
-                        return System.utils.showAlert("الرجاء إدخال نسبة صحيحة بين 0 و 100.");
-                    }
-
-                    // Save
-                    const visit = {
-                        id: Date.now(),
-                        schoolId: System.currentUser.role === 'admin' ? (schoolIdStr !== 'all' ? parseInt(schoolIdStr) : System.data.users.find(u=>u.id===teacherId)?.schoolId) : System.currentUser.schoolId,
-                        stageId: stageId,
-                        gradeId: gradeId,
-                        classId: classId,
-                        teacherId: teacherId,
-                        weekId: weekId,
-                        date: date,
-                        lessonTitle: lessonTitle,
-                        percentage: numPercentage,
-                        notes: notes,
-                        visitorId: System.currentUser.id,
-                        visitorName: System.currentUser.name
-                    };
-
-                    if(!System.data.visits) System.data.visits = [];
-                    System.data.visits.push(visit);
-                    System.save();
-                    
-                    System.utils.showAlert("تم حفظ الزيارة بنجاح!");
-                    
-                    // Reset fields slightly
-                    document.getElementById('visit-lesson').value = '';
-                    document.getElementById('visit-percentage').value = '';
-                    document.getElementById('visit-notes').value = '';
-                },
-
-                // --- منطق تقرير الزيارات ---
-                initReport: function() {
-                    System.utils.populateSchools('vreport-school');
-                    this.updateReportStages();
-                    this.renderReport();
-                },
-                updateReportStages: function() {
-                    const sel = document.getElementById('vreport-stage');
-                    if(!sel) return;
-                    sel.innerHTML = '<option value="all">كل المراحل</option>';
-                    const schoolIdStr = document.getElementById('vreport-school').value;
-                    const targetSchoolId = System.currentUser.role === 'admin' && schoolIdStr !== 'all' && schoolIdStr ? parseInt(schoolIdStr) : System.currentUser.schoolId;
-
-                    if (targetSchoolId) {
-                        const school = System.data.schools.find(s => s.id === targetSchoolId);
-                        if(school && school.stages) school.stages.forEach(st => sel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
-                    } else if (System.currentUser.role === 'admin') {
-                        System.data.schools.forEach(s => s.stages.forEach(st => sel.innerHTML += `<option value="${st.id}">${s.name} - ${st.name}</option>`));
-                    }
-                    this.updateReportTeachers();
-                },
-                updateReportTeachers: function() {
-                    const stageId = document.getElementById('vreport-stage').value;
-                    const schoolIdStr = document.getElementById('vreport-school').value;
-                    const teacherSel = document.getElementById('vreport-teacher');
-                    teacherSel.innerHTML = '<option value="all">جميع المعلمين</option>';
-                    
-                    const currentUser = System.currentUser;
-                    const teachers = System.data.users.filter(u => u.role === 'teacher');
-                    
-                    const filteredTeachers = teachers.filter(t => {
-                        if (currentUser.role === 'admin') {
-                            if (schoolIdStr !== 'all' && schoolIdStr && t.schoolId != schoolIdStr) return false;
-                        } else if (t.schoolId !== currentUser.schoolId) {
-                            return false;
-                        }
-                        
-                        if(stageId && stageId !== 'all') {
-                            let hasStage = false;
-                            const assignments = System.data.assignments.filter(a => a.teacherId === t.id);
-                            for(let a of assignments) {
-                                let clsStageId = null;
-                                System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
-                                    if(c.id === a.classId) clsStageId = st.id;
-                                }))));
-                                if(clsStageId == stageId) { hasStage = true; break; }
-                            }
-                            if(!hasStage) return false;
-                        }
-
-                        if(currentUser.role === 'coordinator') {
-                            const teacherAssigns = System.data.assignments.filter(a => a.teacherId === t.id);
-                            let inScope = false;
-                            for(let a of teacherAssigns) {
-                                const gid = System.dashboard.getGradeId(a.classId);
-                                if (currentUser.scope?.gradeIds?.includes(gid)) { inScope = true; break; }
-                            }
-                            if(!inScope) return false;
-                        }
-                        return true;
-                    });
-
-                    filteredTeachers.forEach(t => teacherSel.innerHTML += `<option value="${t.id}">${t.name}</option>`);
-                },
-                renderReport: function() {
-                    const table = document.getElementById('visits-report-table');
-                    const thead = table.querySelector('thead');
-                    const tbody = table.querySelector('tbody');
-                    
-                    const filterSchool = document.getElementById('vreport-school').value;
-                    const filterStage = document.getElementById('vreport-stage').value;
-                    const filterTeacher = document.getElementById('vreport-teacher').value;
-                    const currentUser = System.currentUser;
-
-                    // 1. Filter Visits based on permissions and selections
-                    let relevantVisits = (System.data.visits || []).filter(v => {
-                        const t = System.data.users.find(u => u.id === v.teacherId);
-                        if(!t) return false;
-
-                        if (currentUser.role === 'admin' && filterSchool !== 'all' && filterSchool && t.schoolId != filterSchool) return false;
-                        if (currentUser.role !== 'admin' && t.schoolId !== currentUser.schoolId) return false;
-                        
-                        if (filterTeacher !== 'all' && v.teacherId != filterTeacher) return false;
-                        
-                        if (filterStage !== 'all') {
-                             let clsStageId = null;
-                             System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
-                                 if(c.id === v.classId) clsStageId = st.id;
-                             }))));
-                             if(clsStageId != filterStage) return false;
-                        }
-
-                        if(currentUser.role === 'coordinator') {
-                             const gid = System.dashboard.getGradeId(v.classId);
-                             if (!currentUser.scope?.gradeIds?.includes(gid)) return false;
-                        }
-                        return true;
-                    });
-
-                    // 2. Group by Teacher
-                    const grouped = {};
-                    relevantVisits.forEach(v => {
-                        if(!grouped[v.teacherId]) grouped[v.teacherId] = [];
-                        grouped[v.teacherId].push(v);
-                    });
-
-                    // 3. Find Max Visits to build dynamic columns
-                    let maxVisits = 0;
-                    Object.values(grouped).forEach(arr => {
-                        if(arr.length > maxVisits) maxVisits = arr.length;
-                    });
-
-                    // Default to at least 1 visit column if no data
-                    if(maxVisits === 0) maxVisits = 1;
-
-                    // 4. Build Header
-                    let headerHtml = `<tr>
-                        <th style="width: 200px;">المدرسة</th>
-                        <th style="width: 200px;">المعلم</th>`;
-                    for(let i=1; i<=maxVisits; i++) {
-                        headerHtml += `<th style="min-width: 250px;">الزيارة ${i}</th>`;
-                    }
-                    headerHtml += `
-                        <th style="width: 150px;" class="bg-success text-white">متوسط النسبة</th>
-                        <th style="min-width: 250px;">جميع الملاحظات</th>
-                    </tr>`;
-                    thead.innerHTML = headerHtml;
-                    tbody.innerHTML = '';
-
-                    // 5. Build Rows
-                    if(Object.keys(grouped).length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="${maxVisits + 4}" class="text-center text-muted">لا توجد زيارات مسجلة تطابق البحث</td></tr>`;
-                        return;
-                    }
-
-                    Object.keys(grouped).forEach(tid => {
-                        const t = System.data.users.find(u => u.id == tid);
-                        const schoolName = System.data.schools.find(s=>s.id === t.schoolId)?.name || '-'; 
-                        const vArr = grouped[tid].sort((a,b) => new Date(a.date) - new Date(b.date)); // Sort chronologically
-                        
-                        let totalPercent = 0;
-                        let allNotes = [];
-                        
-                        let rowHtml = `<tr>
-                            <td class="fw-bold bg-light">${schoolName}</td>
-                            <td class="fw-bold bg-light">${t ? t.name : 'غير معروف'}</td>`;
-                        
-                        for(let i=0; i<maxVisits; i++) {
-                            if(i < vArr.length) {
-                                const v = vArr[i];
-                                totalPercent += v.percentage;
-                                if(v.notes) allNotes.push(`- ${v.notes}`);
-                                
-                                rowHtml += `
-                                    <td class="small">
-                                        <div class="border rounded p-2 text-start bg-white shadow-sm">
-                                            <div><i class="far fa-calendar-alt text-primary me-1"></i> ${v.date}</div>
-                                            <div><i class="fas fa-user-tie text-info me-1"></i> ${v.visitorName}</div>
-                                            <div class="mt-1 border-top pt-1 text-center fw-bold text-${v.percentage < 60 ? 'danger': (v.percentage < 85 ? 'warning' : 'success')}">${v.percentage}%</div>
-                                        </div>
-                                    </td>`;
-                            } else {
-                                rowHtml += `<td class="text-muted bg-light">-</td>`;
-                            }
-                        }
-
-                        const avg = vArr.length > 0 ? Math.round(totalPercent / vArr.length) : 0;
-                        const avgColor = avg < 60 ? 'danger' : (avg < 85 ? 'warning' : 'success');
-
-                        rowHtml += `
-                            <td class="fw-bold text-${avgColor} fs-5">${avg}%</td>
-                            <td class="small text-start" style="white-space: pre-wrap;">${allNotes.join('\n')}</td>
-                        </tr>`;
-                        
-                        tbody.innerHTML += rowHtml;
-                    });
-                }
             },
 
             admin: {
@@ -1224,7 +947,6 @@
                 deleteGrade: function(sid, stid, gid) { if(confirm('حذف الصف؟')) { const s = System.data.schools.find(x=>x.id==sid); const st = s.stages.find(x=>x.id==stid); st.grades = st.grades.filter(x=>x.id!=gid); System.save(); this.renderAllLists(); } },
                 editClass: function(sid, stid, gid, cid) { const s = System.data.schools.find(x=>x.id==sid); const st = s.stages.find(x=>x.id==stid); const g = st.grades.find(x=>x.id==gid); const c = g.classes.find(x=>x.id==cid); const n = prompt('تعديل الفصل', c.name); if(n) { c.name=n; System.save(); this.renderAllLists(); } },
                 deleteClass: function(sid, stid, gid, cid) { if(confirm('حذف الفصل؟')) { const s = System.data.schools.find(x=>x.id==sid); const st = s.stages.find(x=>x.id==stid); const g = st.grades.find(x=>x.id==gid); g.classes = g.classes.filter(x=>x.id!=cid); System.save(); this.renderAllLists(); } },
-
                 addSchool: function() { const n = document.getElementById('new-school-name').value; if(n) { if(!System.data.schools) System.data.schools = []; System.data.schools.push({id: Date.now(), name: n, stages:[]}); System.save(); this.renderAllLists(); document.getElementById('new-school-name').value=''; } },
                 addStage: function() { const sid = parseInt(document.getElementById('struct-school-select').value); const n = document.getElementById('new-stage-name').value; if(sid && n) { const school = System.data.schools.find(s => s.id === sid); if(school) { if(!school.stages) school.stages = []; school.stages.push({id: this.genId(), name: n, grades:[]}); System.save(); System.ui.updateStagesDropdown(); this.renderStructurePreview(); document.getElementById('new-stage-name').value = ''; } } else { System.utils.showAlert('اختر المدرسة'); } },
                 addGrade: function() { const sid = parseInt(document.getElementById('struct-school-select').value); const stid = document.getElementById('struct-stage-select').value; const n = document.getElementById('new-grade-name').value; if(sid && stid && n) { const school = System.data.schools.find(s => s.id === sid); if(school) { const stage = school.stages.find(s => s.id === stid); if(stage) { if(!stage.grades) stage.grades = []; stage.grades.push({id: this.genId(), name: n, classes:[]}); System.save(); System.ui.updateGradesDropdown(); this.renderStructurePreview(); document.getElementById('new-grade-name').value = ''; } } } else { System.utils.showAlert('اختر المرحلة'); } },
@@ -1234,23 +956,12 @@
                 addCriteria: function() { const n = document.getElementById('new-criteria-name').value; if(n) { if(!System.data.criteria) System.data.criteria = []; System.data.criteria.push({id: Date.now(), name: n}); System.save(); this.renderList('criteria', System.data.criteria); document.getElementById('new-criteria-name').value=''; } },
                 editItem: function(type, id) { const isNum = type !== 'criteria' && type !== 'weeks' && type !== 'subjects'; const searchId = isNum ? parseInt(id) : id; const item = System.data[type].find(x => x.id == searchId); if(item) { const newName = prompt('تعديل:', item.name); if(newName && newName !== item.name) { item.name = newName; System.save(); this.renderAllLists(); } } },
                 deleteItem: function(type, id) { if(confirm('حذف؟')) { if(type==='schools') id=parseInt(id); else id=isNaN(id)?id:parseInt(id); System.data[type] = System.data[type].filter(x => x.id !== id); System.save(); this.renderAllLists(); } },
-                
                 initUserView: function() { const schSel = document.getElementById('user-school-select'); schSel.innerHTML = '<option value="">اختر المدرسة</option>'; System.data.schools.forEach(s => schSel.innerHTML += `<option value="${s.id}">${s.name}</option>`); const subSel = document.getElementById('user-subject-select'); subSel.innerHTML = '<option value="">اختر المادة</option>'; System.data.subjects.forEach(s => subSel.innerHTML += `<option value="${s.id}">${s.name}</option>`); this.renderUsersTable(); },
-                saveUser: function() {
-                    const id = document.getElementById('user-edit-id').value; const name = document.getElementById('user-fullname').value; const username = document.getElementById('user-username').value; const mobile = document.getElementById('user-mobile').value; const password = document.getElementById('user-password').value; const role = document.getElementById('user-role').value; const schoolId = parseInt(document.getElementById('user-school-select').value); const subjectId = document.getElementById('user-subject-select').value;
-                    if(!name || !username || !schoolId || !mobile) return System.utils.showAlert('بيانات ناقصة');
-                    const scope = { stageIds: [], gradeIds: [] }; document.querySelectorAll('.scope-check:checked').forEach(cb => { const [st, gr] = cb.value.split('|'); if(!scope.stageIds.includes(st)) scope.stageIds.push(st); scope.gradeIds.push(gr); });
-                    const generatedPass = System.utils.generatePassword(); const finalPassword = password ? password : (id ? null : generatedPass);
-                    const userObj = { id: id ? parseInt(id) : Date.now(), name, username, role, schoolId, mobile, subjectId: subjectId?parseInt(subjectId):null, scope };
-                    if (finalPassword) userObj.password = finalPassword; else { const existing = System.data.users.find(u=>u.id==id); if(existing) userObj.password = existing.password; else userObj.password = generatedPass; }
-                    if(id) { const idx = System.data.users.findIndex(u=>u.id==id); System.data.users[idx] = {...System.data.users[idx], ...userObj}; } else { System.data.users.push(userObj); }
-                    System.save(); this.cancelEditUser(); this.renderUsersTable();
-                },
+                saveUser: function() { const id = document.getElementById('user-edit-id').value; const name = document.getElementById('user-fullname').value; const username = document.getElementById('user-username').value; const mobile = document.getElementById('user-mobile').value; const password = document.getElementById('user-password').value; const role = document.getElementById('user-role').value; const schoolId = parseInt(document.getElementById('user-school-select').value); const subjectId = document.getElementById('user-subject-select').value; if(!name || !username || !schoolId || !mobile) return System.utils.showAlert('بيانات ناقصة'); const scope = { stageIds: [], gradeIds: [] }; document.querySelectorAll('.scope-check:checked').forEach(cb => { const [st, gr] = cb.value.split('|'); if(!scope.stageIds.includes(st)) scope.stageIds.push(st); scope.gradeIds.push(gr); }); const generatedPass = System.utils.generatePassword(); const finalPassword = password ? password : (id ? null : generatedPass); const userObj = { id: id ? parseInt(id) : Date.now(), name, username, role, schoolId, mobile, subjectId: subjectId?parseInt(subjectId):null, scope }; if (finalPassword) userObj.password = finalPassword; else { const existing = System.data.users.find(u=>u.id==id); if(existing) userObj.password = existing.password; else userObj.password = generatedPass; } if(id) { const idx = System.data.users.findIndex(u=>u.id==id); System.data.users[idx] = {...System.data.users[idx], ...userObj}; } else { System.data.users.push(userObj); } System.save(); this.cancelEditUser(); this.renderUsersTable(); },
                 renderUsersTable: function() { const tbody = document.getElementById('users-table-body'); tbody.innerHTML = ''; System.data.users.forEach(u => { const sName = System.data.schools.find(s=>s.id === u.schoolId)?.name || '-'; tbody.innerHTML += `<tr><td>${u.name}</td><td>${u.username}</td><td>${u.password}</td><td>${u.mobile||'-'}</td><td>${u.role}</td><td>${sName}</td><td><button class="btn btn-sm btn-warning" onclick="System.admin.loadUser(${u.id})"><i class="fas fa-pen"></i></button> <button class="btn btn-sm btn-danger" onclick="System.admin.delUser(${u.id})"><i class="fas fa-trash"></i></button></td></tr>`; }); },
                 loadUser: function(id) { const u = System.data.users.find(x => x.id === id); document.getElementById('user-edit-id').value = u.id; document.getElementById('user-fullname').value = u.name; document.getElementById('user-username').value = u.username; document.getElementById('user-password').value = u.password; document.getElementById('user-mobile').value = u.mobile || ''; document.getElementById('user-role').value = u.role; document.getElementById('user-school-select').value = u.schoolId; System.ui.toggleUserFields(); if(u.subjectId) document.getElementById('user-subject-select').value = u.subjectId; setTimeout(() => { if(u.scope && u.scope.gradeIds) u.scope.gradeIds.forEach(gid => { const cb = document.querySelector(`.scope-check[value*="${gid}"]`); if(cb) cb.checked = true; }); }, 100); document.getElementById('btn-save-user').innerText = 'تحديث'; document.getElementById('btn-cancel-user').classList.remove('hidden'); },
                 cancelEditUser: function() { document.getElementById('user-edit-id').value = ''; document.getElementById('user-fullname').value = ''; document.getElementById('user-username').value = ''; document.getElementById('user-password').value = ''; document.getElementById('user-mobile').value = ''; document.getElementById('user-school-select').value = ''; document.getElementById('btn-save-user').innerText = 'حفظ'; document.getElementById('btn-cancel-user').classList.add('hidden'); document.getElementById('scope-options').innerHTML = ''; },
                 delUser: function(id) { if(confirm('حذف؟')) { System.data.users = System.data.users.filter(u => u.id !== id); System.save(); this.renderUsersTable(); } },
-
                 initAssignmentsView: function() { const schSel = document.getElementById('assign-school'); schSel.innerHTML = '<option value="">اختر المدرسة</option>'; System.data.schools.forEach(s => schSel.innerHTML += `<option value="${s.id}">${s.name}</option>`); const subSel = document.getElementById('assign-subject'); subSel.innerHTML = '<option value="">المادة الافتراضية</option>'; System.data.subjects.forEach(s => subSel.innerHTML += `<option value="${s.id}">${s.name}</option>`); this.renderCurrentAssignments(); },
                 updateAssignStages: function() { System.ui.updateStagesDropdown('assign-school', 'assign-stage'); },
                 updateAssignGrades: function() { System.ui.updateGradesDropdown('assign-school', 'assign-stage', 'assign-grade'); },
@@ -1366,7 +1077,7 @@
                             return false;
                         }
                         
-                        if(stageId !== 'all') {
+                        if(stageId && stageId !== 'all') {
                             let hasStage = false;
                             const assignments = System.data.assignments.filter(a => a.teacherId === t.id);
                             for(let a of assignments) {
@@ -1738,7 +1449,6 @@
                     const nameFilter = document.getElementById('gaps-search-name').value.toLowerCase();
                     
                     const user = System.currentUser;
-                    const criteriaCount = System.data.criteria.length;
                     let hasResults = false;
 
                     System.data.assignments.forEach(assign => {
@@ -1954,7 +1664,619 @@
                 delete: function(id) { if(confirm('حذف هذا الإجراء؟')) { System.data.procedures = System.data.procedures.filter(p => p.id !== id); System.save(); System.teacherFile.render(); System.procedures.renderList(); } },
                 edit: function(id) { const p = System.data.procedures.find(x => x.id === id); if(!p) return; const newSit = prompt('تعديل الموقف:', p.situation); const newAct = prompt('تعديل الإجراء:', p.action); if(newSit && newAct) { p.situation = newSit; p.action = newAct; System.save(); System.teacherFile.render(); System.procedures.renderList(); } }
             },
-            
+
+            visits: {
+                initEntry: function() {
+                    System.utils.populateSchools('visit-school');
+                    const wSel = document.getElementById('visit-week');
+                    wSel.innerHTML = '<option value="">اختر الأسبوع</option>';
+                    System.data.weeks.forEach(w => wSel.innerHTML += `<option value="${w.id}">${w.name}</option>`);
+                    document.getElementById('visit-date').valueAsDate = new Date();
+                    
+                    this.updateStages();
+                },
+                updateStages: function() {
+                    const sSel = document.getElementById('visit-stage');
+                    sSel.innerHTML = '<option value="">اختر المرحلة</option>';
+                    const schoolIdStr = document.getElementById('visit-school').value;
+                    const targetSchoolId = System.currentUser.role === 'admin' && schoolIdStr !== 'all' && schoolIdStr ? parseInt(schoolIdStr) : System.currentUser.schoolId;
+
+                    if (targetSchoolId) {
+                        const school = System.data.schools.find(s => s.id === targetSchoolId);
+                        if (school && school.stages) school.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
+                    } else if (System.currentUser.role === 'admin') {
+                        System.data.schools.forEach(s => s.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${s.name} - ${st.name}</option>`));
+                    }
+                    this.updateTeachers();
+                },
+                updateTeachers: function() {
+                    const stageId = document.getElementById('visit-stage').value;
+                    const schoolIdStr = document.getElementById('visit-school').value;
+                    const teacherSel = document.getElementById('visit-teacher');
+                    teacherSel.innerHTML = '<option value="">اختر المعلم</option>';
+                    document.getElementById('visit-grade').innerHTML = '<option value="">اختر الصف</option>';
+                    document.getElementById('visit-class').innerHTML = '<option value="">اختر الفصل</option>';
+                    
+                    const currentUser = System.currentUser;
+                    const teachers = System.data.users.filter(u => u.role === 'teacher');
+                    
+                    const filteredTeachers = teachers.filter(t => {
+                        if (currentUser.role === 'admin') {
+                            if (schoolIdStr !== 'all' && schoolIdStr && t.schoolId != schoolIdStr) return false;
+                        } else if (t.schoolId !== currentUser.schoolId) {
+                            return false;
+                        }
+                        
+                        if(stageId && stageId !== 'all') {
+                            let hasStage = false;
+                            const assignments = System.data.assignments.filter(a => a.teacherId === t.id);
+                            for(let a of assignments) {
+                                let clsStageId = null;
+                                System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                                    if(c.id === a.classId) clsStageId = st.id;
+                                }))));
+                                if(clsStageId == stageId) { hasStage = true; break; }
+                            }
+                            if(!hasStage) return false;
+                        }
+
+                        if(currentUser.role === 'coordinator') {
+                            const teacherAssigns = System.data.assignments.filter(a => a.teacherId === t.id);
+                            let inScope = false;
+                            for(let a of teacherAssigns) {
+                                const gid = System.dashboard.getGradeId(a.classId);
+                                if (currentUser.scope?.gradeIds?.includes(gid)) { inScope = true; break; }
+                            }
+                            if(!inScope) return false;
+                        }
+
+                        return true;
+                    });
+
+                    filteredTeachers.forEach(t => teacherSel.innerHTML += `<option value="${t.id}">${t.name}</option>`);
+                },
+                updateGradesAndClasses: function() {
+                    const teacherId = document.getElementById('visit-teacher').value;
+                    const gradeSel = document.getElementById('visit-grade');
+                    const classSel = document.getElementById('visit-class');
+                    gradeSel.innerHTML = '<option value="">اختر الصف</option>';
+                    classSel.innerHTML = '<option value="">اختر الفصل</option>';
+
+                    if(!teacherId) return;
+
+                    const assignments = System.data.assignments.filter(a => a.teacherId == teacherId);
+                    const gradeIds = new Set();
+                    
+                    assignments.forEach(a => {
+                        System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                            if(c.id === a.classId) {
+                                if (System.currentUser.role !== 'coordinator' || System.currentUser.scope?.gradeIds?.includes(g.id)) {
+                                    if(!gradeIds.has(g.id)) {
+                                        gradeIds.add(g.id);
+                                        gradeSel.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+                                    }
+                                }
+                            }
+                        }))));
+                    });
+                },
+                updateClasses: function() {
+                    const teacherId = document.getElementById('visit-teacher').value;
+                    const gradeId = document.getElementById('visit-grade').value;
+                    const classSel = document.getElementById('visit-class');
+                    classSel.innerHTML = '<option value="">اختر الفصل</option>';
+
+                    if(!teacherId || !gradeId) return;
+                    const assignments = System.data.assignments.filter(a => a.teacherId == teacherId);
+
+                    assignments.forEach(a => {
+                        System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => {
+                            if(g.id == gradeId) {
+                                g.classes.forEach(c => {
+                                    if(c.id === a.classId) {
+                                        classSel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                                    }
+                                });
+                            }
+                        })));
+                    });
+                },
+                saveVisit: function() {
+                    const schoolIdStr = document.getElementById('visit-school').value;
+                    const stageId = document.getElementById('visit-stage').value;
+                    const teacherId = parseInt(document.getElementById('visit-teacher').value);
+                    const gradeId = document.getElementById('visit-grade').value;
+                    const classId = document.getElementById('visit-class').value;
+                    const weekId = parseInt(document.getElementById('visit-week').value);
+                    const date = document.getElementById('visit-date').value;
+                    const lessonTitle = document.getElementById('visit-lesson').value;
+                    const percentage = document.getElementById('visit-percentage').value;
+                    const notes = document.getElementById('visit-notes').value;
+
+                    if(!teacherId || !classId || !weekId || !date || !lessonTitle || percentage === "") {
+                        return System.utils.showAlert("الرجاء إكمال جميع الحقول المطلوبة (المعلم، الفصل، الأسبوع، التاريخ، عنوان الدرس، النسبة).");
+                    }
+                    
+                    const numPercentage = parseFloat(percentage);
+                    if(isNaN(numPercentage) || numPercentage < 0 || numPercentage > 100) {
+                        return System.utils.showAlert("الرجاء إدخال نسبة صحيحة بين 0 و 100.");
+                    }
+
+                    const visit = {
+                        id: Date.now(),
+                        schoolId: System.currentUser.role === 'admin' ? (schoolIdStr !== 'all' ? parseInt(schoolIdStr) : System.data.users.find(u=>u.id===teacherId)?.schoolId) : System.currentUser.schoolId,
+                        stageId: stageId,
+                        gradeId: gradeId,
+                        classId: classId,
+                        teacherId: teacherId,
+                        weekId: weekId,
+                        date: date,
+                        lessonTitle: lessonTitle,
+                        percentage: numPercentage,
+                        notes: notes,
+                        visitorId: System.currentUser.id,
+                        visitorName: System.currentUser.name
+                    };
+
+                    if(!System.data.visits) System.data.visits = [];
+                    System.data.visits.push(visit);
+                    System.save();
+                    
+                    System.utils.showAlert("تم حفظ الزيارة بنجاح!");
+                    
+                    document.getElementById('visit-lesson').value = '';
+                    document.getElementById('visit-percentage').value = '';
+                    document.getElementById('visit-notes').value = '';
+                },
+
+                initReport: function() {
+                    System.utils.populateSchools('vreport-school');
+                    this.updateReportStages();
+                    this.renderReport();
+                },
+                updateReportStages: function() {
+                    const sel = document.getElementById('vreport-stage');
+                    if(!sel) return;
+                    sel.innerHTML = '<option value="all">كل المراحل</option>';
+                    const schoolIdStr = document.getElementById('vreport-school').value;
+                    const targetSchoolId = System.currentUser.role === 'admin' && schoolIdStr !== 'all' && schoolIdStr ? parseInt(schoolIdStr) : System.currentUser.schoolId;
+
+                    if (targetSchoolId) {
+                        const school = System.data.schools.find(s => s.id === targetSchoolId);
+                        if(school && school.stages) school.stages.forEach(st => sel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
+                    } else if (System.currentUser.role === 'admin') {
+                        System.data.schools.forEach(s => s.stages.forEach(st => sel.innerHTML += `<option value="${st.id}">${s.name} - ${st.name}</option>`));
+                    }
+                    this.updateReportTeachers();
+                },
+                updateReportTeachers: function() {
+                    const stageId = document.getElementById('vreport-stage').value;
+                    const schoolIdStr = document.getElementById('vreport-school').value;
+                    const teacherSel = document.getElementById('vreport-teacher');
+                    teacherSel.innerHTML = '<option value="all">جميع المعلمين</option>';
+                    
+                    const currentUser = System.currentUser;
+                    const teachers = System.data.users.filter(u => u.role === 'teacher');
+                    
+                    const filteredTeachers = teachers.filter(t => {
+                        if (currentUser.role === 'admin') {
+                            if (schoolIdStr !== 'all' && schoolIdStr && t.schoolId != schoolIdStr) return false;
+                        } else if (t.schoolId !== currentUser.schoolId) {
+                            return false;
+                        }
+                        
+                        if(stageId && stageId !== 'all') {
+                            let hasStage = false;
+                            const assignments = System.data.assignments.filter(a => a.teacherId === t.id);
+                            for(let a of assignments) {
+                                let clsStageId = null;
+                                System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                                    if(c.id === a.classId) clsStageId = st.id;
+                                }))));
+                                if(clsStageId == stageId) { hasStage = true; break; }
+                            }
+                            if(!hasStage) return false;
+                        }
+
+                        if(currentUser.role === 'coordinator') {
+                            const teacherAssigns = System.data.assignments.filter(a => a.teacherId === t.id);
+                            let inScope = false;
+                            for(let a of teacherAssigns) {
+                                const gid = System.dashboard.getGradeId(a.classId);
+                                if (currentUser.scope?.gradeIds?.includes(gid)) { inScope = true; break; }
+                            }
+                            if(!inScope) return false;
+                        }
+                        return true;
+                    });
+
+                    filteredTeachers.forEach(t => teacherSel.innerHTML += `<option value="${t.id}">${t.name}</option>`);
+                },
+                renderReport: function() {
+                    const table = document.getElementById('visits-report-table');
+                    const thead = table.querySelector('thead');
+                    const tbody = table.querySelector('tbody');
+                    
+                    const filterSchool = document.getElementById('vreport-school').value;
+                    const filterStage = document.getElementById('vreport-stage').value;
+                    const filterTeacher = document.getElementById('vreport-teacher').value;
+                    const currentUser = System.currentUser;
+
+                    let relevantVisits = (System.data.visits || []).filter(v => {
+                        const t = System.data.users.find(u => u.id === v.teacherId);
+                        if(!t) return false;
+
+                        if (currentUser.role === 'admin' && filterSchool !== 'all' && filterSchool && t.schoolId != filterSchool) return false;
+                        if (currentUser.role !== 'admin' && t.schoolId !== currentUser.schoolId) return false;
+                        
+                        if (filterTeacher !== 'all' && v.teacherId != filterTeacher) return false;
+                        
+                        if (filterStage !== 'all') {
+                             let clsStageId = null;
+                             System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                                 if(c.id === v.classId) clsStageId = st.id;
+                             }))));
+                             if(clsStageId != filterStage) return false;
+                        }
+
+                        if(currentUser.role === 'coordinator') {
+                             const gid = System.dashboard.getGradeId(v.classId);
+                             if (!currentUser.scope?.gradeIds?.includes(gid)) return false;
+                        }
+                        return true;
+                    });
+
+                    const grouped = {};
+                    relevantVisits.forEach(v => {
+                        if(!grouped[v.teacherId]) grouped[v.teacherId] = [];
+                        grouped[v.teacherId].push(v);
+                    });
+
+                    let maxVisits = 0;
+                    Object.values(grouped).forEach(arr => {
+                        if(arr.length > maxVisits) maxVisits = arr.length;
+                    });
+
+                    if(maxVisits === 0) maxVisits = 1;
+
+                    let headerHtml = `<tr>
+                        <th style="width: 200px;">المدرسة</th>
+                        <th style="width: 200px;">المعلم</th>`;
+                    for(let i=1; i<=maxVisits; i++) {
+                        headerHtml += `<th style="min-width: 250px;">الزيارة ${i}</th>`;
+                    }
+                    headerHtml += `
+                        <th style="width: 150px;" class="bg-success text-white">متوسط النسبة</th>
+                        <th style="min-width: 250px;">جميع الملاحظات</th>
+                    </tr>`;
+                    thead.innerHTML = headerHtml;
+                    tbody.innerHTML = '';
+
+                    if(Object.keys(grouped).length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="${maxVisits + 4}" class="text-center text-muted">لا توجد زيارات مسجلة تطابق البحث</td></tr>`;
+                        return;
+                    }
+
+                    Object.keys(grouped).forEach(tid => {
+                        const t = System.data.users.find(u => u.id == tid);
+                        const schoolName = System.data.schools.find(s=>s.id === t.schoolId)?.name || '-'; 
+                        const vArr = grouped[tid].sort((a,b) => new Date(a.date) - new Date(b.date)); 
+                        
+                        let totalPercent = 0;
+                        let allNotes = [];
+                        
+                        let rowHtml = `<tr>
+                            <td class="fw-bold bg-light">${schoolName}</td>
+                            <td class="fw-bold bg-light">${t ? t.name : 'غير معروف'}</td>`;
+                        
+                        for(let i=0; i<maxVisits; i++) {
+                            if(i < vArr.length) {
+                                const v = vArr[i];
+                                totalPercent += v.percentage;
+                                if(v.notes) allNotes.push(`- ${v.notes}`);
+                                
+                                rowHtml += `
+                                    <td class="small">
+                                        <div class="border rounded p-2 text-start bg-white shadow-sm">
+                                            <div><i class="far fa-calendar-alt text-primary me-1"></i> ${v.date}</div>
+                                            <div><i class="fas fa-user-tie text-info me-1"></i> ${v.visitorName}</div>
+                                            <div class="mt-1 border-top pt-1 text-center fw-bold text-${v.percentage < 60 ? 'danger': (v.percentage < 85 ? 'warning' : 'success')}">${v.percentage}%</div>
+                                        </div>
+                                    </td>`;
+                            } else {
+                                rowHtml += `<td class="text-muted bg-light">-</td>`;
+                            }
+                        }
+
+                        const avg = vArr.length > 0 ? Math.round(totalPercent / vArr.length) : 0;
+                        const avgColor = avg < 60 ? 'danger' : (avg < 85 ? 'warning' : 'success');
+
+                        rowHtml += `
+                            <td class="fw-bold text-${avgColor} fs-5">${avg}%</td>
+                            <td class="small text-start" style="white-space: pre-wrap;">${allNotes.join('\n')}</td>
+                        </tr>`;
+                        
+                        tbody.innerHTML += rowHtml;
+                    });
+                }
+            },
+
+            results: {
+                initEntry: function() {
+                    System.utils.populateSchools('res-entry-school');
+                    this.updateEntryStages();
+                    document.getElementById('res-entry-classes-container').innerHTML = '';
+                    document.getElementById('btn-save-results').classList.add('hidden');
+                },
+                updateEntryStages: function() {
+                    const sSel = document.getElementById('res-entry-stage');
+                    sSel.innerHTML = '<option value="">اختر المرحلة</option>';
+                    const schoolIdStr = document.getElementById('res-entry-school').value;
+                    const targetSchoolId = System.currentUser.role === 'admin' && schoolIdStr !== 'all' && schoolIdStr ? parseInt(schoolIdStr) : System.currentUser.schoolId;
+
+                    if (targetSchoolId) {
+                        const school = System.data.schools.find(s => s.id === targetSchoolId);
+                        if (school && school.stages) school.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
+                    } else if (System.currentUser.role === 'admin') {
+                        System.data.schools.forEach(s => s.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${s.name} - ${st.name}</option>`));
+                    }
+                    this.updateEntryTeachers();
+                    document.getElementById('res-entry-classes-container').innerHTML = '';
+                    document.getElementById('btn-save-results').classList.add('hidden');
+                },
+                updateEntryTeachers: function() {
+                    const stageId = document.getElementById('res-entry-stage').value;
+                    const schoolIdStr = document.getElementById('res-entry-school').value;
+                    const teacherSel = document.getElementById('res-entry-teacher');
+                    teacherSel.innerHTML = '<option value="">اختر المعلم</option>';
+                    document.getElementById('res-entry-classes-container').innerHTML = '';
+                    document.getElementById('btn-save-results').classList.add('hidden');
+                    
+                    const currentUser = System.currentUser;
+                    const teachers = System.data.users.filter(u => u.role === 'teacher');
+                    
+                    const filteredTeachers = teachers.filter(t => {
+                        if (currentUser.role === 'admin') {
+                            if (schoolIdStr !== 'all' && schoolIdStr && t.schoolId != schoolIdStr) return false;
+                        } else if (t.schoolId !== currentUser.schoolId) {
+                            return false;
+                        }
+                        
+                        if(stageId && stageId !== 'all') {
+                            let hasStage = false;
+                            const assignments = System.data.assignments.filter(a => a.teacherId === t.id);
+                            for(let a of assignments) {
+                                let clsStageId = null;
+                                System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                                    if(c.id === a.classId) clsStageId = st.id;
+                                }))));
+                                if(clsStageId == stageId) { hasStage = true; break; }
+                            }
+                            if(!hasStage) return false;
+                        }
+                        return true;
+                    });
+
+                    filteredTeachers.forEach(t => teacherSel.innerHTML += `<option value="${t.id}">${t.name}</option>`);
+                },
+                loadClasses: function() {
+                    const teacherId = parseInt(document.getElementById('res-entry-teacher').value);
+                    const semester = document.getElementById('res-entry-semester').value;
+                    const examType = document.getElementById('res-entry-exam').value;
+                    const container = document.getElementById('res-entry-classes-container');
+
+                    if(!teacherId) return System.utils.showAlert("الرجاء اختيار المعلم أولاً");
+
+                    const assignments = System.data.assignments.filter(a => a.teacherId === teacherId);
+                    if(assignments.length === 0) {
+                        container.innerHTML = '<div class="alert alert-warning text-center">لا توجد فصول مسكنة لهذا المعلم.</div>';
+                        document.getElementById('btn-save-results').classList.add('hidden');
+                        return;
+                    }
+
+                    let html = `<h5 class="text-purple mb-3">إدخال نسب الفصول المسندة:</h5><div class="row g-3">`;
+                    
+                    assignments.forEach(a => {
+                        let className = '';
+                        System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                            if(c.id === a.classId) className = `${g.name} - ${c.name}`;
+                        }))));
+
+                        const existing = (System.data.teacherResults || []).find(r => r.teacherId === teacherId && r.classId === a.classId && r.semester === semester && r.examType === examType);
+                        const val = existing ? existing.percentage : '';
+
+                        html += `
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded bg-white">
+                                    <label class="form-label fw-bold text-dark">${className}</label>
+                                    <input type="number" class="form-control result-input" data-classid="${a.classId}" placeholder="أدخل النسبة %" min="0" max="100" value="${val}">
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += `</div>`;
+                    container.innerHTML = html;
+                    document.getElementById('btn-save-results').classList.remove('hidden');
+                },
+                saveResults: function() {
+                    const teacherId = parseInt(document.getElementById('res-entry-teacher').value);
+                    const semester = document.getElementById('res-entry-semester').value;
+                    const examType = document.getElementById('res-entry-exam').value;
+                    const inputs = document.querySelectorAll('.result-input');
+                    
+                    let hasErrors = false;
+                    inputs.forEach(inp => {
+                        const val = parseFloat(inp.value);
+                        if(inp.value !== "" && (isNaN(val) || val < 0 || val > 100)) hasErrors = true;
+                    });
+
+                    if(hasErrors) return System.utils.showAlert("الرجاء التأكد من إدخال نسب صحيحة (0-100) فقط.");
+
+                    inputs.forEach(inp => {
+                        const classId = inp.dataset.classid;
+                        const val = inp.value !== "" ? parseFloat(inp.value) : null;
+                        
+                        System.data.teacherResults = System.data.teacherResults.filter(r => !(r.teacherId === teacherId && r.classId === classId && r.semester === semester && r.examType === examType));
+                        
+                        if(val !== null) {
+                            System.data.teacherResults.push({
+                                id: Date.now() + Math.random(),
+                                teacherId: teacherId,
+                                classId: classId,
+                                semester: semester,
+                                examType: examType,
+                                percentage: val
+                            });
+                        }
+                    });
+
+                    System.save();
+                    System.utils.showAlert("تم حفظ النتائج بنجاح!");
+                },
+
+                initReport: function() {
+                    System.utils.populateSchools('res-rep-school');
+                    this.updateReportStages();
+                    this.renderReport();
+                },
+                updateReportStages: function() {
+                    const sSel = document.getElementById('res-rep-stage');
+                    if(!sSel) return;
+                    sSel.innerHTML = '<option value="all">كل المراحل</option>';
+                    const schoolIdStr = document.getElementById('res-rep-school').value;
+                    const targetSchoolId = System.currentUser.role === 'admin' && schoolIdStr !== 'all' && schoolIdStr ? parseInt(schoolIdStr) : System.currentUser.schoolId;
+
+                    if (targetSchoolId) {
+                        const school = System.data.schools.find(s => s.id === targetSchoolId);
+                        if (school && school.stages) school.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
+                    } else if (System.currentUser.role === 'admin') {
+                        System.data.schools.forEach(s => s.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${s.name} - ${st.name}</option>`));
+                    }
+                    this.updateReportTeachers();
+                },
+                updateReportTeachers: function() {
+                    const stageId = document.getElementById('res-rep-stage').value;
+                    const schoolIdStr = document.getElementById('res-rep-school').value;
+                    const teacherSel = document.getElementById('res-rep-teacher');
+                    teacherSel.innerHTML = '<option value="all">جميع المعلمين</option>';
+                    
+                    const currentUser = System.currentUser;
+                    const teachers = System.data.users.filter(u => u.role === 'teacher');
+                    
+                    const filteredTeachers = teachers.filter(t => {
+                        if (currentUser.role === 'admin') {
+                            if (schoolIdStr !== 'all' && schoolIdStr && t.schoolId != schoolIdStr) return false;
+                        } else if (t.schoolId !== currentUser.schoolId) {
+                            return false;
+                        }
+                        
+                        if(stageId && stageId !== 'all') {
+                            let hasStage = false;
+                            const assignments = System.data.assignments.filter(a => a.teacherId === t.id);
+                            for(let a of assignments) {
+                                let clsStageId = null;
+                                System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                                    if(c.id === a.classId) clsStageId = st.id;
+                                }))));
+                                if(clsStageId == stageId) { hasStage = true; break; }
+                            }
+                            if(!hasStage) return false;
+                        }
+                        return true;
+                    });
+
+                    filteredTeachers.forEach(t => teacherSel.innerHTML += `<option value="${t.id}">${t.name}</option>`);
+                },
+                renderReport: function() {
+                    const table = document.getElementById('teacher-results-table');
+                    const thead = table.querySelector('thead');
+                    const tbody = table.querySelector('tbody');
+                    
+                    const filterSchool = document.getElementById('res-rep-school').value;
+                    const filterStage = document.getElementById('res-rep-stage').value;
+                    const filterTeacher = document.getElementById('res-rep-teacher').value;
+                    
+                    thead.innerHTML = `
+                        <tr>
+                            <th rowspan="2" class="align-middle">المعلم</th>
+                            <th rowspan="2" class="align-middle">الصف والفصل</th>
+                            <th colspan="3" class="table-primary border-primary">الفصل الدراسي الأول</th>
+                            <th colspan="3" class="table-success border-success">الفصل الدراسي الثاني</th>
+                            <th rowspan="2" class="align-middle bg-warning text-dark">المتوسط العام</th>
+                        </tr>
+                        <tr>
+                            <th class="table-primary border-primary">الفترة الأولى</th><th class="table-primary border-primary">الفترة الثانية</th><th class="table-primary border-primary">نهاية الفصل</th>
+                            <th class="table-success border-success">الفترة الأولى</th><th class="table-success border-success">الفترة الثانية</th><th class="table-success border-success">نهاية الفصل</th>
+                        </tr>
+                    `;
+
+                    tbody.innerHTML = '';
+                    
+                    const html = this.generateReportRowsHTML(filterSchool, filterStage, filterTeacher);
+                    tbody.innerHTML = html || '<tr><td colspan="9" class="text-muted">لا توجد نتائج مسجلة</td></tr>';
+                },
+                generateReportRowsHTML: function(filterSchool, filterStage, filterTeacher) {
+                    const currentUser = System.currentUser;
+                    let teachers = System.data.users.filter(u => u.role === 'teacher');
+                    
+                    teachers = teachers.filter(t => {
+                        if (currentUser.role === 'admin' && filterSchool !== 'all' && t.schoolId != filterSchool) return false;
+                        if (currentUser.role !== 'admin' && t.schoolId !== currentUser.schoolId) return false;
+                        if (filterTeacher !== 'all' && filterTeacher && t.id != filterTeacher) return false;
+                        return true;
+                    });
+
+                    let allRows = '';
+                    
+                    teachers.forEach(t => {
+                        const assignments = System.data.assignments.filter(a => a.teacherId === t.id);
+                        let teacherRows = '';
+
+                        assignments.forEach((a, idx) => {
+                            let clsStageId = null;
+                            let className = '';
+                            System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                                if(c.id === a.classId) { clsStageId = st.id; className = `${g.name} - ${c.name}`; }
+                            }))));
+
+                            if(filterStage !== 'all' && filterStage && clsStageId != filterStage) return;
+
+                            const res = System.data.teacherResults.filter(r => r.teacherId === t.id && r.classId === a.classId);
+                            
+                            const getVal = (sem, type) => {
+                                const rec = res.find(r => r.semester === sem && r.examType === type);
+                                return rec ? rec.percentage : null;
+                            };
+
+                            const vals = [
+                                getVal("1", "p1"), getVal("1", "p2"), getVal("1", "end"),
+                                getVal("2", "p1"), getVal("2", "p2"), getVal("2", "end")
+                            ];
+
+                            let total = 0, count = 0;
+                            vals.forEach(v => { if(v !== null) { total += v; count++; } });
+                            const avg = count > 0 ? Math.round(total / count) : '-';
+
+                            teacherRows += `<tr>`;
+                            if(idx === 0) teacherRows += `<td rowspan="${assignments.length}" class="fw-bold align-middle bg-light">${t.name}</td>`;
+                            teacherRows += `
+                                <td>${className}</td>
+                                <td>${vals[0]!==null ? vals[0]+'%' : '-'}</td>
+                                <td>${vals[1]!==null ? vals[1]+'%' : '-'}</td>
+                                <td class="fw-bold">${vals[2]!==null ? vals[2]+'%' : '-'}</td>
+                                <td>${vals[3]!==null ? vals[3]+'%' : '-'}</td>
+                                <td>${vals[4]!==null ? vals[4]+'%' : '-'}</td>
+                                <td class="fw-bold">${vals[5]!==null ? vals[5]+'%' : '-'}</td>
+                                <td class="fw-bold text-${avg !== '-' ? (avg < 60 ? 'danger' : (avg < 85 ? 'warning' : 'success')) : 'muted'} bg-light">${avg !== '-' ? avg+'%' : '-'}</td>
+                            </tr>`;
+                        });
+                        allRows += teacherRows;
+                    });
+                    return allRows;
+                }
+            },
+
             teacherFile: { 
                 init: function() { 
                     System.utils.populateSchools('file-school-select');
@@ -1994,7 +2316,6 @@
                     
                     const gapsTable = document.querySelector('#table-gaps tbody'); gapsTable.innerHTML = ''; let gapVisitsCount = 0; const distinctVisits = []; System.data.evaluations.filter(e => e.teacherId === tid).forEach(e => { const key = `${e.weekId}_${e.classId}`; if(!distinctVisits.includes(key)) distinctVisits.push(key); }); distinctVisits.forEach(key => { const [wid, cid] = key.split('_'); const weekName = System.data.weeks.find(w => w.id == wid)?.name || '-'; const evals = System.data.evaluations.filter(e => e.teacherId === tid && e.weekId == wid && e.classId == cid); if(evals.length > 0) { const date = evals[0].date; let className = ''; System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => { if(c.id === cid) className = `${c.name}`; })))); const assign = System.data.assignments.find(a => a.teacherId === tid && a.classId === cid); const subName = assign ? System.utils.getSubjectName(assign.subjectId) : '-'; const presentIds = evals.map(e => e.criteriaId); const missingCriteria = System.data.criteria.filter(c => !presentIds.includes(c.id)); const missingNames = missingCriteria.map(c => c.name); const missingCount = missingCriteria.length; if(missingCount > 0) { gapVisitsCount++; const performance = Math.round((presentIds.length / System.data.criteria.length) * 100); gapsTable.innerHTML += `<tr><td>${className}</td><td>${weekName}</td><td>${subName}</td><td>${date}</td><td class="text-danger fw-bold text-center">${missingCount}</td><td class="small text-muted">${missingNames.join(' ، ')}</td><td><span class="badge bg-${performance < 50 ? 'danger' : 'warning'}">${performance}%</span></td></tr>`; } } }); 
                     
-                    // --- تعبئة بيانات الزيارات في ملف المعلم ---
                     const visitsTbody = document.querySelector('#table-visits tbody');
                     visitsTbody.innerHTML = '';
                     const teacherVisits = (System.data.visits || []).filter(v => v.teacherId === tid).sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -2025,6 +2346,60 @@
                     const generalAvg = teacherVisits.length > 0 ? Math.round(totalPercent / teacherVisits.length) : 0;
                     document.getElementById('tf-visits-average').innerText = `${generalAvg}%`;
 
+                    const role = System.currentUser.role;
+                    const resTabBtn = document.getElementById('tab-btn-results');
+                    if (role === 'admin' || role === 'supervisor') {
+                        resTabBtn.parentElement.style.display = 'block';
+                        
+                        const table = document.getElementById('table-tf-results');
+                        table.querySelector('thead').innerHTML = `
+                            <tr>
+                                <th rowspan="2" class="align-middle">الصف والفصل</th>
+                                <th colspan="3" class="table-primary border-primary">الفصل الدراسي الأول</th>
+                                <th colspan="3" class="table-success border-success">الفصل الدراسي الثاني</th>
+                                <th rowspan="2" class="align-middle bg-warning text-dark">المتوسط العام</th>
+                            </tr>
+                            <tr>
+                                <th class="table-primary border-primary">الفترة الأولى</th><th class="table-primary border-primary">الفترة الثانية</th><th class="table-primary border-primary">نهاية الفصل</th>
+                                <th class="table-success border-success">الفترة الأولى</th><th class="table-success border-success">الفترة الثانية</th><th class="table-success border-success">نهاية الفصل</th>
+                            </tr>
+                        `;
+                        const resTbody = table.querySelector('tbody');
+                        const assignments = System.data.assignments.filter(a => a.teacherId === tid);
+                        resTbody.innerHTML = '';
+                        
+                        if(assignments.length === 0) {
+                            resTbody.innerHTML = `<tr><td colspan="8" class="text-muted text-center">لا توجد فصول مسندة للمعلم</td></tr>`;
+                        } else {
+                            assignments.forEach(a => {
+                                let className = '';
+                                System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                                    if(c.id === a.classId) className = `${g.name} - ${c.name}`;
+                                }))));
+
+                                const res = System.data.teacherResults.filter(r => r.teacherId === tid && r.classId === a.classId);
+                                const getVal = (sem, type) => { const rec = res.find(r => r.semester === sem && r.examType === type); return rec ? rec.percentage : null; };
+
+                                const vals = [ getVal("1", "p1"), getVal("1", "p2"), getVal("1", "end"), getVal("2", "p1"), getVal("2", "p2"), getVal("2", "end") ];
+                                let total = 0, count = 0;
+                                vals.forEach(v => { if(v !== null) { total += v; count++; } });
+                                const avg = count > 0 ? Math.round(total / count) : '-';
+
+                                resTbody.innerHTML += `<tr>
+                                    <td class="fw-bold bg-light">${className}</td>
+                                    <td>${vals[0]!==null ? vals[0]+'%' : '-'}</td>
+                                    <td>${vals[1]!==null ? vals[1]+'%' : '-'}</td>
+                                    <td class="fw-bold">${vals[2]!==null ? vals[2]+'%' : '-'}</td>
+                                    <td>${vals[3]!==null ? vals[3]+'%' : '-'}</td>
+                                    <td>${vals[4]!==null ? vals[4]+'%' : '-'}</td>
+                                    <td class="fw-bold">${vals[5]!==null ? vals[5]+'%' : '-'}</td>
+                                    <td class="fw-bold text-${avg !== '-' ? (avg < 60 ? 'danger' : (avg < 85 ? 'warning' : 'success')) : 'muted'} bg-light">${avg !== '-' ? avg+'%' : '-'}</td>
+                                </tr>`;
+                            });
+                        }
+                    } else {
+                        resTabBtn.parentElement.style.display = 'none';
+                    }
 
                     document.getElementById('tf-praise-count').innerText = praise.length; 
                     document.getElementById('tf-note-count').innerText = notes.length; 
