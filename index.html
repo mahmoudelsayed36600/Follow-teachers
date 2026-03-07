@@ -666,6 +666,7 @@
                     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#data" type="button">بيانات</button></li>
                     <li class="nav-item"><button class="nav-link fw-bold text-success" data-bs-toggle="tab" data-bs-target="#tab-stages-rank" type="button">ترتيب المراحل</button></li>
                     <li class="nav-item"><button class="nav-link fw-bold text-primary" data-bs-toggle="tab" data-bs-target="#tab-teachers-rank" type="button">ترتيب المعلمين</button></li>
+                    <li class="nav-item admin-super-only" id="nav-item-res-rank" style="display: none;"><button class="nav-link fw-bold text-purple" data-bs-toggle="tab" data-bs-target="#tab-teachers-results-rank" type="button">ترتيب نتائج المعلمين</button></li>
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="stats" role="tabpanel">
@@ -706,6 +707,21 @@
                          <div class="table-responsive">
                             <table class="table table-bordered table-striped text-center" id="table-teachers-rank">
                                 <thead class="table-primary"><tr><th>#</th><th>المعلم</th><th>المادة</th><th>الفصول التي زارها</th><th>نسبة الأداء %</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-teachers-results-rank" role="tabpanel">
+                        <div class="alert" style="background-color: #f3e8ff; color: #6f42c1; border-color: #6f42c1;">ترتيب المعلمين طبقاً لمتوسط نسب النتائج المدخلة</div>
+                        <div class="row g-2 mb-3 bg-light p-2 rounded border no-print">
+                             <div class="col-md-3 admin-only"><select id="res-rank-school" class="form-select form-select-sm" onchange="System.reports.updateResRankStages()"></select></div>
+                             <div class="col-md-3"><select id="res-rank-stage" class="form-select form-select-sm"><option value="all">كل المراحل</option></select></div>
+                             <div class="col-md-3"><button class="btn text-white btn-sm w-100 fw-bold" style="background-color: #6f42c1;" onclick="System.reports.renderTeachersResultsRank()">تحديث الترتيب</button></div>
+                        </div>
+                         <div class="table-responsive">
+                            <table class="table table-bordered table-striped text-center align-middle" id="table-teachers-results-rank">
+                                <thead style="background-color: #6f42c1; color: white;"><tr><th>#</th><th>المعلم</th><th>المدرسة</th><th>المادة</th><th>متوسط النتائج %</th></tr></thead>
                                 <tbody></tbody>
                             </table>
                         </div>
@@ -2441,13 +2457,26 @@
                     
                     System.utils.populateSchools('rep-school');
                     System.utils.populateSchools('rank-stage-school');
+                    System.utils.populateSchools('res-rank-school');
                     
                     this.updateStages();
                     this.updateRankFilters('init');
+                    this.updateResRankStages();
+
+                    const role = System.currentUser.role;
+                    const resRankTab = document.getElementById('nav-item-res-rank');
+                    if(resRankTab) {
+                        if (role === 'admin' || role === 'supervisor') {
+                            resRankTab.style.display = 'block';
+                        } else {
+                            resRankTab.style.display = 'none';
+                        }
+                    }
 
                     this.generate(); 
                     this.renderStagesRank();
                     this.renderTeachersRank();
+                    this.renderTeachersResultsRank();
                 }, 
                 updateStages: function() {
                     const sSel = document.getElementById('rep-stage');
@@ -2675,6 +2704,88 @@
                             <td>${r.subject}</td>
                             <td>${r.visits}</td>
                             <td><span class="fw-bold ${r.pct < 50 ? 'text-danger' : 'text-success'}">${Math.round(r.pct)}%</span></td>
+                        </tr>`;
+                    });
+                },
+                updateResRankStages: function() {
+                    const sSel = document.getElementById('res-rank-stage');
+                    if(!sSel) return;
+                    sSel.innerHTML = '<option value="all">كل المراحل</option>';
+                    const schoolIdStr = document.getElementById('res-rank-school').value;
+                    const targetSchoolId = System.currentUser.role === 'admin' && schoolIdStr !== 'all' && schoolIdStr ? parseInt(schoolIdStr) : System.currentUser.schoolId;
+
+                    if (targetSchoolId) {
+                        const school = System.data.schools.find(s => s.id === targetSchoolId);
+                        if (school && school.stages) school.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${st.name}</option>`);
+                    } else if (System.currentUser.role === 'admin') {
+                        System.data.schools.forEach(s => s.stages.forEach(st => sSel.innerHTML += `<option value="${st.id}">${s.name} - ${st.name}</option>`));
+                    }
+                },
+                renderTeachersResultsRank: function() {
+                    const filterSchool = document.getElementById('res-rank-school')?.value || 'all';
+                    const filterStage = document.getElementById('res-rank-stage').value;
+                    const currentUser = System.currentUser;
+
+                    const teacherStats = [];
+                    const teachers = System.data.users.filter(u => u.role === 'teacher');
+                    
+                    teachers.forEach(t => {
+                        if (currentUser.role === 'admin' && filterSchool !== 'all' && t.schoolId != filterSchool) return;
+                        if (currentUser.role !== 'admin' && t.schoolId !== currentUser.schoolId) return;
+
+                        const assignments = System.data.assignments.filter(a => a.teacherId === t.id);
+                        if(assignments.length === 0) return;
+
+                        let hasValidStage = false;
+                        let totalPct = 0;
+                        let count = 0;
+
+                        assignments.forEach(a => {
+                            let clsStageId = null;
+                            System.data.schools.forEach(s => s.stages.forEach(st => st.grades.forEach(g => g.classes.forEach(c => {
+                                if(c.id === a.classId) clsStageId = st.id;
+                            }))));
+
+                            if(filterStage !== 'all' && clsStageId != filterStage) return;
+                            hasValidStage = true;
+
+                            const res = System.data.teacherResults.filter(r => r.teacherId === t.id && r.classId === a.classId);
+                            res.forEach(r => {
+                                totalPct += r.percentage;
+                                count++;
+                            });
+                        });
+
+                        if(filterStage !== 'all' && !hasValidStage) return;
+
+                        const avg = count > 0 ? Math.round(totalPct / count) : 0;
+                        
+                        if (count > 0 || hasValidStage) {
+                             const schoolName = System.data.schools.find(s => s.id === t.schoolId)?.name || '-';
+                             const subName = System.utils.getSubjectName(t.subjectId) || '-';
+                             teacherStats.push({ name: t.name, school: schoolName, subject: subName, avg: avg, count: count });
+                        }
+                    });
+
+                    teacherStats.sort((a, b) => b.avg - a.avg);
+
+                    const tbody = document.querySelector('#table-teachers-results-rank tbody');
+                    tbody.innerHTML = '';
+                    
+                    if(teacherStats.length === 0) {
+                         tbody.innerHTML = '<tr><td colspan="5" class="text-muted">لا توجد بيانات متاحة</td></tr>';
+                         return;
+                    }
+
+                    teacherStats.forEach((r, idx) => {
+                         let color = r.avg < 60 ? 'danger' : (r.avg < 85 ? 'warning' : 'success');
+                         if(r.count === 0) color = 'muted'; 
+                         tbody.innerHTML += `<tr>
+                            <td>${idx + 1}</td>
+                            <td>${r.name}</td>
+                            <td>${r.school}</td>
+                            <td>${r.subject}</td>
+                            <td class="fw-bold text-${color}">${r.count > 0 ? r.avg + '%' : 'لم تُرصد نتائج'}</td>
                         </tr>`;
                     });
                 },
