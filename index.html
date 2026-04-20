@@ -750,7 +750,11 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const dbRef = doc(db, "schoolSystem", "mainDatabase_v1");
+        
+        const oldDbRef = doc(db, "schoolSystem", "mainDatabase_v1");
+        const dbCoreRef = doc(db, "schoolSystem", "coreData_v2");
+        const dbEvalsRef = doc(db, "schoolSystem", "evaluationsData_v2");
+        const dbRecordsRef = doc(db, "schoolSystem", "recordsData_v2");
 
         const defaultData = {
             users: [{id: 1, name: 'Admin', username: 'admin', password: 'Ma@521990', role: 'admin', mobile: '966500000000', schoolId: null, scope: {}}],
@@ -765,16 +769,32 @@
             init: async function() {
                 document.getElementById('loading-overlay').classList.remove('hidden');
                 try {
-                    const docSnap = await getDoc(dbRef);
-                    if (docSnap.exists()) { 
-                        this.data = docSnap.data(); 
-                        if(!this.data.visits) this.data.visits = []; 
-                        if(!this.data.teacherResults) this.data.teacherResults = []; 
-                    } 
-                    else { this.data = JSON.parse(JSON.stringify(defaultData)); await setDoc(dbRef, defaultData); }
+                    const coreSnap = await getDoc(dbCoreRef);
+                    if (coreSnap.exists()) {
+                        const evalsSnap = await getDoc(dbEvalsRef);
+                        const recordsSnap = await getDoc(dbRecordsRef);
+                        this.data = {
+                            ...coreSnap.data(),
+                            ...(evalsSnap.exists() ? evalsSnap.data() : { evaluations: [], teacherResults: [] }),
+                            ...(recordsSnap.exists() ? recordsSnap.data() : { procedures: [], notifications: [], visits: [] })
+                        };
+                    } else {
+                        // عملية نقل ذكية للبيانات القديمة لمرة واحدة
+                        const oldSnap = await getDoc(oldDbRef);
+                        if (oldSnap.exists()) { 
+                            this.data = oldSnap.data(); 
+                            if(!this.data.visits) this.data.visits = []; 
+                            if(!this.data.teacherResults) this.data.teacherResults = []; 
+                            await this.save(); 
+                        } else { 
+                            this.data = JSON.parse(JSON.stringify(defaultData)); 
+                            await this.save(); 
+                        }
+                    }
 
                     if (!this.data.users.find(u => u.role === 'admin')) {
-                        this.data.users.push(defaultData.users[0]); this.save();
+                        this.data.users.push(defaultData.users[0]); 
+                        this.save();
                     }
 
                     const sessionUser = sessionStorage.getItem('currentUser');
@@ -785,7 +805,9 @@
                             this.currentUser = freshUser;
                             sessionStorage.setItem('currentUser', JSON.stringify(freshUser));
                             this.auth.postLoginInit();
-                        } else { this.auth.logout(); }
+                        } else { 
+                            this.auth.logout(); 
+                        }
                     } else {
                         document.getElementById('login-section').classList.remove('hidden');
                         document.getElementById('sidebar').classList.add('hidden');
@@ -794,26 +816,61 @@
                 } catch (error) {
                     console.error("Firebase Error:", error);
                     System.utils.showAlert("حدث خطأ في الاتصال بقاعدة البيانات. يرجى التأكد من الإنترنت أو إعدادات Firebase.");
-                } finally { document.getElementById('loading-overlay').classList.add('hidden'); }
+                } finally { 
+                    document.getElementById('loading-overlay').classList.add('hidden'); 
+                }
             },
 
             save: async function() {
-                try { await setDoc(dbRef, this.data); } 
-                catch(e) { console.error("Save Error", e); System.utils.showAlert("فشل الحفظ في قاعدة البيانات!"); }
+                try { 
+                    const cleanData = JSON.parse(JSON.stringify(this.data));
+                    
+                    // تقسيم البيانات إلى 3 مستندات لتجنب تجاوز حد 1 ميجابايت
+                    const coreData = {
+                        users: cleanData.users || [], schools: cleanData.schools || [],
+                        subjects: cleanData.subjects || [], weeks: cleanData.weeks || [],
+                        criteria: cleanData.criteria || [], assignments: cleanData.assignments || []
+                    };
+                    const evalsData = {
+                        evaluations: cleanData.evaluations || [], teacherResults: cleanData.teacherResults || []
+                    };
+                    const recordsData = {
+                        procedures: cleanData.procedures || [], notifications: cleanData.notifications || [], visits: cleanData.visits || []
+                    };
+
+                    await Promise.all([
+                        setDoc(dbCoreRef, coreData),
+                        setDoc(dbEvalsRef, evalsData),
+                        setDoc(dbRecordsRef, recordsData)
+                    ]);
+                } 
+                catch(e) { 
+                    console.error("Save Error", e); 
+                    System.utils.showAlert("فشل الحفظ! السبب: " + e.message); 
+                }
             },
 
+            // كائن auth المفقود تم استعادته هنا لحل مشكلة الدخول
             auth: {
                 login: function() {
-                    const u = document.getElementById('login-username').value;
-                    const p = document.getElementById('login-password').value;
-                    const user = System.data.users.find(x => x.username === u && x.password === p);
-                    
-                    if (user) {
-                        System.currentUser = user; sessionStorage.setItem('currentUser', JSON.stringify(user));
+                    const userVal = document.getElementById('login-username').value;
+                    const passVal = document.getElementById('login-password').value;
+                    if(!userVal || !passVal) {
+                        return System.utils.showAlert('أدخل اسم المستخدم وكلمة المرور');
+                    }
+                    const user = System.data.users.find(u => u.username === userVal && u.password === passVal);
+                    if(user) {
+                        sessionStorage.setItem('currentUser', JSON.stringify(user));
+                        System.currentUser = user;
                         this.postLoginInit();
-                    } else { System.utils.showAlert('بيانات الدخول غير صحيحة'); }
+                    } else {
+                        System.utils.showAlert('بيانات الدخول غير صحيحة');
+                    }
                 },
-                logout: function() { sessionStorage.removeItem('currentUser'); location.reload(); },
+                logout: function() {
+                    sessionStorage.removeItem('currentUser');
+                    location.reload();
+                },
                 postLoginInit: function() {
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('sidebar').classList.remove('hidden');
@@ -824,13 +881,16 @@
                     document.getElementById('sidebar-initials').innerText = System.currentUser.name.charAt(0);
                     
                     const roleMap = { 'admin':'مدير النظام', 'manager':'مدير تعليمي', 'supervisor':'مشرف', 'coordinator':'منسق', 'teacher':'معلم' };
-                    document.getElementById('sidebar-role').innerText = roleMap[System.currentUser.role];
+                    document.getElementById('sidebar-role').innerText = roleMap[System.currentUser.role] || 'مستخدم';
 
                     if (System.currentUser.role === 'admin') {
                         document.body.classList.add('is-admin');
-                    } else { document.body.classList.remove('is-admin'); }
+                    } else { 
+                        document.body.classList.remove('is-admin'); 
+                    }
 
-                    System.ui.buildSidebar(); System.ui.updateNotificationCount();
+                    System.ui.buildSidebar(); 
+                    System.ui.updateNotificationCount();
                     
                     if(System.currentUser.role === 'admin') System.ui.showView('view-admin-structure');
                     else if(System.currentUser.role === 'coordinator') System.ui.showView('view-coordinator-entry');
@@ -1199,7 +1259,7 @@
                     });
                 },
                 renderStats: function() { const container = document.getElementById('general-stats-row'); const createCard = (title, val, color, icon) => `<div class="col-md-3"><div class="stat-card bg-${color}"><h3>${val}</h3><p>${title}</p><i class="fas ${icon}"></i></div></div>`; let html = ''; if (System.currentUser.role === 'admin') { html += createCard('المدارس', System.data.schools.length, 'primary', 'fa-school'); html += createCard('المستخدمين', System.data.users.length, 'success', 'fa-users'); } html += createCard('التسكينات', System.data.assignments.length, 'warning', 'fa-link'); html += createCard('الإشعارات', System.data.notifications.length, 'danger', 'fa-bell'); container.innerHTML = html; },
-                renderMonitoringStatus: function() { 
+               renderMonitoringStatus: function() { 
                     const weekId = parseInt(document.getElementById('dash-week').value); 
                     const weekName = System.data.weeks.find(w => w.id === weekId)?.name || '-'; 
                     
@@ -1257,7 +1317,10 @@
                             const msg = `أثناء زيارة فصل ${className} (مادة ${subjectName}) وجدت هذه البنود غير مفعلة (${missingNames.join('، ')}) ...`; 
                             const safeNotes = notesText.replace(/'/g, "\\'").replace(/"/g, "&quot;");
                             
-                            tbody.innerHTML += `<tr><td>${schoolName}</td><td>${stageName}</td><td>${className}</td><td>${weekName}</td><td>${subjectName}</td><td>${teacher.name}</td><td>${coordName}</td><td class="text-danger fw-bold cursor-pointer" onclick="System.dashboard.showMissingDetails('${missingNames.join(',')}', '${safeNotes}')">${missingCount}</td><td><button class="btn btn-sm btn-success" onclick="System.utils.sendWhatsapp('${teacher.mobile}', '${teacher.id}', \`${msg}\`, '${missingNames.join(' - ')}')">مراسلة</button></td></tr>`; 
+                            const encodedMsg = encodeURIComponent(msg);
+                            const encodedMissing = encodeURIComponent(missingNames.join(' - '));
+                            
+                            tbody.innerHTML += `<tr><td>${schoolName}</td><td>${stageName}</td><td>${className}</td><td>${weekName}</td><td>${subjectName}</td><td>${teacher.name}</td><td>${coordName}</td><td class="text-danger fw-bold cursor-pointer" onclick="System.dashboard.showMissingDetails('${missingNames.join(',')}', '${safeNotes}')">${missingCount}</td><td><button class="btn btn-sm btn-success" onclick="System.utils.sendWhatsapp('${teacher.mobile || ''}', '${teacher.id}', '${encodedMsg}', '${encodedMissing}')">مراسلة</button></td></tr>`; 
                         } 
                     }); 
                     if(incompleteCount === 0) tbody.innerHTML = '<tr><td colspan="9" class="text-center text-success">جميع الفصول مكتملة الرصد لهذا الأسبوع (حسب الفلترة)</td></tr>'; 
@@ -1529,13 +1592,29 @@
                     document.getElementById('customAlertBody').innerText = msg;
                     new bootstrap.Modal(document.getElementById('customAlertModal')).show();
                 },
-                sendWhatsapp: function(mobile, teacherId, msg, missingItemsStr) { 
-                    if(!mobile) return; 
+                sendWhatsapp: function(mobile, teacherId, encodedMsg, encodedMissing) { 
+                    const msg = decodeURIComponent(encodedMsg || ''); 
+                    const missingItemsStr = decodeURIComponent(encodedMissing || ''); 
+
                     const today = new Date(); 
-                    System.data.notifications.push({ id: Date.now(), teacherId: parseInt(teacherId), type: 'whatsapp_alert', date: today.toISOString().split('T')[0], day: '-', details: msg, missing: missingItemsStr }); 
+                    System.data.notifications.push({ 
+                        id: Date.now(), 
+                        teacherId: parseInt(teacherId), 
+                        type: 'whatsapp_alert', 
+                        date: today.toISOString().split('T')[0], 
+                        day: '-', 
+                        details: msg, 
+                        missing: missingItemsStr 
+                    }); 
+                    
                     System.save(); 
                     System.ui.updateNotificationCount(); 
-                    window.open(`https://wa.me/${mobile}?text=${encodeURIComponent(msg)}`, '_blank'); 
+
+                    if(mobile && mobile !== 'undefined' && mobile.trim() !== '') {
+                        window.open(`https://wa.me/${mobile}?text=${encodeURIComponent(msg)}`, '_blank'); 
+                    } else {
+                        System.utils.showAlert('تم حفظ الإشعار في النظام، ولكن المعلم لا يملك رقم جوال مسجل لإرسال رسالة واتساب.');
+                    }
                 },
                 printAllNotifications: function() { if(System.data.notifications.length === 0) return System.utils.showAlert('لا توجد إشعارات'); let html = `<div style="direction: rtl; text-align: right; padding: 20px;"><h2 style="text-align: center;">سجل الإشعارات</h2><table style="width: 100%; border-collapse: collapse; border: 1px solid #000;"><thead><tr style="background: #f0f0f0;"><th style="border: 1px solid #000; padding: 8px;">التاريخ</th><th style="border: 1px solid #000; padding: 8px;">المعلم</th><th style="border: 1px solid #000; padding: 8px;">التفاصيل</th></tr></thead><tbody>`; [...System.data.notifications].reverse().forEach(n => { const t = System.data.users.find(u => u.id === n.teacherId)?.name || 'غير معروف'; const fullText = n.details + (n.missing ? `<br><small><b>النواقص:</b> ${n.missing}</small>` : ''); html += `<tr><td style="border: 1px solid #000; padding: 8px;">${n.date}</td><td style="border: 1px solid #000; padding: 8px;">${t}</td><td style="border: 1px solid #000; padding: 8px;">${fullText}</td></tr>`; }); html += `</tbody></table></div>`; document.getElementById('print-area-container').innerHTML = html; document.body.classList.add('printing-notification'); window.print(); document.body.classList.remove('printing-notification'); },
                 getSubjectName: function(id) { return System.data.subjects.find(s=>s.id == id)?.name || ''; },
@@ -2430,7 +2509,7 @@
                     this.fillProcTable('table-written', written, t.mobile, t.id);
                     this.fillProcTable('table-violations', violations, t.mobile, t.id);
                 },
-                fillProcTable: function(tableId, data, mobile, teacherId) {
+               fillProcTable: function(tableId, data, mobile, teacherId) {
                     const tbody = document.querySelector(`#${tableId} tbody`);
                     tbody.innerHTML = '';
                     const isAdmin = System.currentUser.role === 'admin';
@@ -2439,7 +2518,9 @@
                     data.forEach(p => {
                         const message = `المكرم المعلم المحترم / ${teacherName}\nنود إحاطتكم أنه تم اتخاذ إجراء مع الموقف : ${p.situation}\nوكان الإجراء كالتالي : ${p.action}\n، مع العلم أن هذه الرسالة الكترونية من نظام متابعة المعلمين تلقائيا`;
                         
-                        let tools = `<i class="fab fa-whatsapp text-success cursor-pointer fa-lg" onclick="System.utils.sendWhatsapp('${mobile}', '${teacherId}', \`${message}\`, '')"></i>`;
+                        const encodedMsg = encodeURIComponent(message);
+                        
+                        let tools = `<i class="fab fa-whatsapp text-success cursor-pointer fa-lg" onclick="System.utils.sendWhatsapp('${mobile || ''}', '${teacherId}', '${encodedMsg}', '')"></i>`;
                         if(isAdmin) {
                             tools += ` <i class="fas fa-edit text-warning cursor-pointer ms-2" onclick="System.procedures.edit(${p.id})"></i>`;
                             tools += ` <i class="fas fa-trash text-danger cursor-pointer ms-2" onclick="System.procedures.delete(${p.id})"></i>`;
@@ -2822,7 +2903,13 @@
         };
 
         window.System = System;
-        window.onload = function() { System.init(); };
+        
+        // استخدام حدث onload بشكل آمن لضمان اكتمال بناء الصفحة
+        if (document.readyState === 'complete') {
+            System.init();
+        } else {
+            window.addEventListener('load', () => System.init());
+        }
     </script>
 </body>
 </html>
